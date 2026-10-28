@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iQPlay TMDB — Documentation & Layout Guide</title>
+  <meta name="description" content="Official documentation, shortcode engine, widget setup, and post creator guide for iQPlay TMDB Blogger Streaming Theme by Ayeng Coding.">
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            themeBg: '#151821',
+            themeSidebar: '#11141c',
+            themeCard: '#1c202c',
+            themeBorder: '#2a3142',
+            themeText: '#f1f5f9',
+            accent: '#9333ea',
+            accentHover: '#a855f7'
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --bg-main: #151821;
+      --bg-sidebar: #11141c;
+      --bg-card: #1c202c;
+      --border-color: #2a3142;
+      --text-main: #f1f5f9;
+      --accent: #9333ea;
+      --accent-hover: #a855f7;
+      --accent-glow: rgba(147, 51, 234, 0.35);
+      --thumb: #333c4d;
+      --track: #151821;
+    }
+
+    /* 2. Custom Dark Scrollbars (Never show white scrollbars) */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--thumb) var(--track);
+    }
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--track);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--thumb);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* Code & Typography */
+    code, pre, .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* 4. Sticky Header Tabs (Direct Body Child) */
+    .header-tabs {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      background: rgba(17, 20, 28, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .tab-link {
+      white-space: nowrap;
+      transition: all 0.25s ease;
+      color: #94a3b8;
+      border-bottom: 2px solid transparent;
+      padding: 0.85rem 1.1rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .tab-link:hover {
+      color: #f1f5f9;
+    }
+    .tab-link.active {
+      color: #fff;
+      border-bottom-color: var(--accent);
+      background: linear-gradient(180deg, rgba(147, 51, 234, 0.05) 0%, rgba(147, 51, 234, 0.18) 100%);
+      box-shadow: inset 0 -2px 0 var(--accent), 0 4px 15px var(--accent-glow);
+    }
+
+    /* Desktop Banner Max-Width (3) */
+    .hero-banner-img {
+      max-width: 680px;
+      margin: 0 auto;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(147, 51, 234, 0.2);
+      border: 1px solid var(--border-color);
+      transition: transform 0.3s ease;
+    }
+    .hero-banner-img:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Glow highlights */
+    .glow-accent {
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+
+    /* Smooth anchor scrolling */
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px;
+    }
+  </style>
+</head>
+<body class="bg-themeBg text-themeText min-h-screen flex flex-col">
+
+  <!-- 4. HEADER (Line 1) -->
+  <header class="w-full bg-[#11141c] px-4 lg:px-8 py-3.5 border-b border-themeBorder flex items-center justify-between z-50">
+    <!-- Logo & Title -->
+    <a href="#" class="flex items-center gap-3 group">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 via-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-purple-600/30 group-hover:scale-105 transition-transform">
+        <i class="fa-solid fa-play text-white text-sm ml-0.5"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-xl font-extrabold tracking-tight text-white font-sans">iQplay</span>
+          <span class="text-[10px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full">Blogger TMDB</span>
+        </div>
+        <p class="text-[11px] text-slate-400 font-medium hidden sm:block">Docs & Web Setup Studio by Ayeng Coding</p>
+      </div>
+    </a>
+
+    <!-- Right Controls: Social SVG Icons + Red Live Demo Button -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Telegram -->
+      <a href="https://t.me/ayengcoding" target="_blank" rel="noopener" title="Telegram @ayengcoding" class="w-9 h-9 rounded-lg bg-[#1c202c] hover:bg-[#2a3142] border border-themeBorder flex items-center justify-center text-slate-300 hover:text-sky-400 transition-colors">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+      </a>
+
+      <!-- Telegram Group -->
+      <a href="https://t.me/ayengcodingofficial" target="_blank" rel="noopener" title="Telegram Official Community" class="w-9 h-9 rounded-lg bg-[#1c202c] hover:bg-[#2a3142] border border-themeBorder flex items-center justify-center text-slate-300 hover:text-sky-400 transition-colors hidden xs:flex">
+        <i class="fa-solid fa-users text-sm"></i>
+      </a>
+
+      <!-- Facebook -->
+      <a href="https://www.facebook.com/acohcayeng" target="_blank" rel="noopener" title="Facebook Profile" class="w-9 h-9 rounded-lg bg-[#1c202c] hover:bg-[#2a3142] border border-themeBorder flex items-center justify-center text-slate-300 hover:text-blue-500 transition-colors">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      </a>
+
+      <!-- Instagram -->
+      <a href="https://www.instagram.com/acoh_cariel/" target="_blank" rel="noopener" title="Instagram" class="w-9 h-9 rounded-lg bg-[#1c202c] hover:bg-[#2a3142] border border-themeBorder flex items-center justify-center text-slate-300 hover:text-pink-500 transition-colors hidden sm:flex">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+      </a>
+
+      <!-- GitHub -->
+      <a href="https://github.com/ayengcoding" target="_blank" rel="noopener" title="GitHub Profile" class="w-9 h-9 rounded-lg bg-[#1c202c] hover:bg-[#2a3142] border border-themeBorder flex items-center justify-center text-slate-300 hover:text-white transition-colors">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      </a>
+
+      <!-- Red Live Demo Button (Desktop Only) -->
+      <a href="https://iqplayofficial.blogspot.com/" target="_blank" rel="noopener" class="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-xs transition-all shadow-md shadow-red-600/30 hover:shadow-red-600/50 hover:-translate-y-0.5">
+        <span>Live Demo</span>
+        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+      </a>
+
+      <!-- Store Gumroad Link -->
+      <a href="https://ayengstore.gumroad.com/l/iqplay" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs transition-all shadow-md shadow-purple-600/30 hover:shadow-purple-600/50">
+        <i class="fa-solid fa-crown text-[10px] text-amber-300"></i>
+        <span class="hidden xs:inline">Get License</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- 4. STICKY HEADER TABS (Direct body child: position: sticky; top: 0; z-index: 999; auto-centering scrollspy) -->
+  <nav class="header-tabs overflow-x-auto" id="sticky-header-tabs" aria-label="Documentation Navigation">
+    <div class="flex items-center px-4 max-w-7xl mx-auto space-x-1" id="nav-tabs-container">
+      <a href="#overview" class="tab-link active" data-target="overview">
+        <i class="fa-solid fa-compass text-xs"></i> Overview
+      </a>
+      <a href="#how-to-use" class="tab-link" data-target="how-to-use">
+        <i class="fa-solid fa-cloud-arrow-up text-xs"></i> 1. Setup & Upload
+      </a>
+      <a href="#layout-guide" class="tab-link" data-target="layout-guide">
+        <i class="fa-solid fa-cubes text-xs"></i> 2. Layout & Widgets
+      </a>
+      <a href="#shortcode-engine" class="tab-link" data-target="shortcode-engine">
+        <i class="fa-solid fa-code text-xs"></i> 3. Shortcodes
+      </a>
+      <a href="#creating-post" class="tab-link" data-target="creating-post">
+        <i class="fa-solid fa-file-circle-plus text-xs"></i> 4. Post Format
+      </a>
+      <a href="#user-system" class="tab-link" data-target="user-system">
+        <i class="fa-solid fa-user-astronaut text-xs"></i> 5. User & Avatars
+      </a>
+      <a href="#community" class="tab-link" data-target="community">
+        <i class="fa-solid fa-heart text-xs"></i> 6. Community
+      </a>
+    </div>
+  </nav>
+
+  <!-- MAIN DOCUMENTATION CONTAINER -->
+  <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-8 space-y-12">
+
+    <!-- 3. DESKTOP BANNER (max-width: 680px) & HERO -->
+    <section id="overview" class="text-center pt-2">
+      <!-- Centered Thumbnail Banner -->
+      <div class="mb-8 flex justify-center">
+        <img src="banner.jpg" alt="iQPlay TMDB Premium Blogger Theme Banner" class="hero-banner-img w-full">
+      </div>
+
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold mb-4">
+        <span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
+        v1.0 Official Production Release
+      </div>
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight mb-4 font-sans">
+        iQPlay TMDB <span class="bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 bg-clip-text text-transparent">Blogger Theme</span>
+      </h1>
+      <p class="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed mb-6">
+        Next-generation high performance movie, drama, and anime streaming theme for Blogger. Powered by TMDb v3 API, dynamic season/episode switcher, multi-server video player failover, Supabase user system, and modular layout rails.
+      </p>
+
+      <!-- Quick Feature Pill Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto text-left mb-8">
+        <div class="p-3.5 rounded-xl bg-themeCard border border-themeBorder flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-white">Ultra Fast</div>
+            <div class="text-[11px] text-slate-400">Pure vanilla engine</div>
+          </div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-themeCard border border-themeBorder flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-pink-500/10 text-pink-400 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-film"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-white">TMDb Powered</div>
+            <div class="text-[11px] text-slate-400">Zero database upkeep</div>
+          </div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-themeCard border border-themeBorder flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-server"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-white">Multi-Server</div>
+            <div class="text-[11px] text-slate-400">Auto-switch streaming</div>
+          </div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-themeCard border border-themeBorder flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-mobile-screen"></i>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-white">100% Responsive</div>
+            <div class="text-[11px] text-slate-400">Native mobile drawer</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1: HOW TO USE & UPLOAD THEME -->
+    <section id="how-to-use" class="scroll-mt-24 space-y-6">
+      <div class="flex items-center gap-3 border-b border-themeBorder pb-3">
+        <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-sm">1</div>
+        <div>
+          <h2 class="text-xl font-bold text-white">How to Use & Upload Theme</h2>
+          <p class="text-xs text-slate-400">Installation, XML replacement, domain license verification, and mandatory static pages</p>
+        </div>
+      </div>
+
+      <!-- Steps Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Step 1: Upload XML -->
+        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
+          <div class="flex items-center gap-2 text-sm font-bold text-white">
+            <span class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 inline-flex items-center justify-center text-xs">A</span>
+            Upload XML Template
+          </div>
+          <ol class="text-xs text-slate-300 space-y-2 list-decimal list-inside leading-relaxed">
+            <li>Log into your <b>Blogger Dashboard</b> (<a href="https://blogger.com" target="_blank" class="text-purple-400 hover:underline">blogger.com</a>).</li>
+            <li>In the left sidebar, click <b>Theme</b>.</li>
+            <li>Click the dropdown arrow next to <b>Customize</b> &gt; select <b>Edit HTML</b> (or <b>Restore</b> &gt; upload <code class="text-purple-300">iQplay-premium.xml</code>).</li>
+            <li>If using <b>Edit HTML</b>: Press <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300">Ctrl + A</kbd> to select all code, delete it, and paste the entire XML content from the file.</li>
+            <li>Click the orange <b>Save</b> icon in the top right corner.</li>
+          </ol>
+        </div>
+
+        <!-- Step 2: License Registration -->
+        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
+          <div class="flex items-center gap-2 text-sm font-bold text-white">
+            <span class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 inline-flex items-center justify-center text-xs">B</span>
+            Domain License Registration
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            iQPlay features an automated domain security module. Before previewing, ensure your domain is licensed:
+          </p>
+          <div class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs space-y-1">
+            <div class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> Single Domain Policy:</div>
+            <p class="text-[11px] text-amber-200/80">Only 1 domain can be registered per license key. To switch domains, unbind your existing site first.</p>
+          </div>
+          <div class="flex flex-wrap gap-2 pt-1">
+            <a href="https://abefilmofficialzone.blogspot.com/p/registration-process.html" target="_blank" class="text-xs px-3 py-1.5 rounded-lg bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/30 inline-flex items-center gap-1.5 transition-colors">
+              <i class="fa-solid fa-id-card"></i> Register Domain License
+            </a>
+            <a href="https://abefilmofficialzone.blogspot.com/2025/08/iqplay_25.html" target="_blank" class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-themeBorder inline-flex items-center gap-1.5 transition-colors">
+              <i class="fa-solid fa-gift"></i> Request Trial Key
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Required Static Blank Pages -->
+      <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-4">
+        <div class="flex items-center gap-2 text-sm font-bold text-white">
+          <span class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 inline-flex items-center justify-center text-xs">C</span>
+          Create Required Static Blank Pages
+        </div>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          The theme routes user actions, video playback, and watchlist bookmarks via dedicated Blogger pages. Go to <b>Blogger Dashboard &gt; Pages &gt; New Page</b> and publish the following pages with blank HTML:
+        </p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border border-themeBorder rounded-lg overflow-hidden">
+            <thead class="bg-[#11141c] text-slate-300 font-semibold border-b border-themeBorder">
+              <tr>
+                <th class="p-3">Page Title</th>
+                <th class="p-3">Generated URL Slug</th>
+                <th class="p-3">Functionality</th>
+                <th class="p-3">Page Content</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-themeBorder text-slate-300">
+              <tr class="hover:bg-slate-800/20">
+                <td class="p-3 font-semibold text-white">Details</td>
+                <td class="p-3 font-mono text-purple-300">/p/details.html</td>
+                <td class="p-3">Movie & series overview, cast, season list, ratings, backdrop</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-slate-800 text-[11px] text-slate-400">Leave Blank</span></td>
+              </tr>
+              <tr class="hover:bg-slate-800/20">
+                <td class="p-3 font-semibold text-white">Player</td>
+                <td class="p-3 font-mono text-purple-300">/p/player.html</td>
+                <td class="p-3">Multi-server video player, episode drawer, downloads, sandbox toggle</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-slate-800 text-[11px] text-slate-400">Leave Blank</span></td>
+              </tr>
+              <tr class="hover:bg-slate-800/20">
+                <td class="p-3 font-semibold text-white">Library</td>
+                <td class="p-3 font-mono text-purple-300">/p/library.html</td>
+                <td class="p-3">Personal saved watchlist, browsing history, and bookmark manager</td>
+                <td class="p-3"><span class="px-2 py-0.5 rounded bg-slate-800 text-[11px] text-slate-400">Leave Blank</span></td>
+              </tr>
+              <tr class="hover:bg-slate-800/20">
+                <td class="p-3 font-semibold text-white">About Us</td>
+                <td class="p-3 font-mono text-purple-300">/p/about-us.html</td>
+                <td class="p-3">Site branding, mission statement & team info</td>
+                <td class="p-3"><span class="text-slate-400">Configured via Layout Widget</span></td>
+              </tr>
+              <tr class="hover:bg-slate-800/20">
+                <td class="p-3 font-semibold text-white">Disclaimer</td>
+                <td class="p-3 font-mono text-purple-300">/p/disclaimer.html</td>
+                <td class="p-3">DMCA, copyright compliance, non-hosting streaming notice</td>
+                <td class="p-3"><span class="text-slate-400">Configured via Layout Widget</span></td>
+              </tr>
+              <tr class="hover:bg-slate-800/20">
+                <td class="p-3 font-semibold text-white">Privacy Policy</td>
+                <td class="p-3 font-mono text-purple-300">/p/privacy-policy.html</td>
+                <td class="p-3">Cookies, ad policy, Supabase user privacy credentials</td>
+                <td class="p-3"><span class="text-slate-400">Configured via Layout Widget</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: LAYOUT GUIDE & WIDGET CONFIGURATION -->
+    <section id="layout-guide" class="scroll-mt-24 space-y-6">
+      <div class="flex items-center gap-3 border-b border-themeBorder pb-3">
+        <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-sm">2</div>
+        <div>
+          <h2 class="text-xl font-bold text-white">Layout Guide & Widget Configuration</h2>
+          <p class="text-xs text-slate-400">How to configure TMDb API, Hero Slider, Video Rails, and Source Providers in Blogger Layout</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Widget 1: TMDB API Key -->
+        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-key text-amber-400"></i> TMDb API Config Widget
+            </span>
+            <span class="text-[10px] font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">Section: tmdb-api-config</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            The template communicates with TMDb v3 REST endpoints asynchronously. Add an HTML/JavaScript widget inside this section with your TMDb API key:
+          </p>
+          <div class="bg-[#11141c] p-3 rounded-lg border border-themeBorder overflow-x-auto text-[11px] font-mono text-slate-300">
+&lt;script&gt;<br>
+&nbsp;&nbsp;window.apiKey = <span class="text-emerald-400">"YOUR_TMDB_V3_API_KEY"</span>;<br>
+&lt;/script&gt;
+          </div>
+        </div>
+
+        <!-- Widget 2: Image Carousel Slider -->
+        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-purple-400"></i> Hero Carousel Slider
+            </span>
+            <span class="text-[10px] font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">Section: image-carousel</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Displays full-bleed backdrop slides with title logos, ratings, genre tags, and direct Play & Watchlist buttons. Simply put the TMDb endpoint query in a Text Widget:
+          </p>
+          <div class="bg-[#11141c] p-3 rounded-lg border border-themeBorder text-[11px] font-mono text-emerald-300">
+            movie/popular
+          </div>
+          <p class="text-[11px] text-slate-400">Or use <code class="text-purple-300">trending/all/day</code> for top trending daily titles.</p>
+        </div>
+
+        <!-- Widget 3: Homepage Rails (Horizontal Carousels) -->
+        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-layer-group text-sky-400"></i> Category Rails & Rows
+            </span>
+            <span class="text-[10px] font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">Section: tmdb-section-1</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Create endless curated categories by adding HTML widgets. The <b>Widget Title</b> will be displayed as the rail header (e.g., <i>Action Movies</i>, <i>Crime Series</i>), while the content holds the endpoint:
+          </p>
+          <div class="space-y-1.5 text-[11px] font-mono">
+            <div class="p-2 bg-[#11141c] rounded border border-themeBorder text-slate-300">
+              <span class="text-purple-400 font-semibold font-sans">Crime Series:</span><br>
+              discover/tv?with_genres=80&sort_by=popularity.desc
+            </div>
+            <div class="p-2 bg-[#11141c] rounded border border-themeBorder text-slate-300">
+              <span class="text-purple-400 font-semibold font-sans">Action Movies:</span><br>
+              discover/movie?with_genres=28&sort_by=popularity.desc
+            </div>
+          </div>
+        </div>
+
+        <!-- Widget 4: Video Sources & Failover -->
+        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-circle-play text-rose-400"></i> Multi-Server Streaming Config
+            </span>
+            <span class="text-[10px] font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">Section: video-sources</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Configured with failover servers. The player dynamically substitutes <code class="text-purple-300">${id}</code>, <code class="text-purple-300">${season}</code>, and <code class="text-purple-300">${episode}</code>:
+          </p>
+          <div class="space-y-1 text-[11px] font-mono">
+            <div class="p-2 bg-[#11141c] rounded border border-themeBorder text-slate-300 truncate">
+              <b class="text-white">Server 1 (VidSrc):</b> https://vidsrc.cc/v2/embed/movie/${id}
+            </div>
+            <div class="p-2 bg-[#11141c] rounded border border-themeBorder text-slate-300 truncate">
+              <b class="text-white">Server 2 (Videasy):</b> https://player.videasy.net/tv/${id}/${season}/${episode}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: MODULAR SHORTCODE ENGINE & INTERACTIVE GENERATOR -->
+    <section id="shortcode-engine" class="scroll-mt-24 space-y-6">
+      <div class="flex items-center gap-3 border-b border-themeBorder pb-3">
+        <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-sm">3</div>
+        <div>
+          <h2 class="text-xl font-bold text-white">Modular Shortcode Engine</h2>
+          <p class="text-xs text-slate-400">Generate responsive carousel rails, grids, top-lists, wide-cards, and filtered tab switchers</p>
+        </div>
+      </div>
+
+      <!-- Interactive Generator Box (5) -->
+      <div class="p-5 sm:p-6 rounded-2xl bg-themeCard border border-themeBorder shadow-xl space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-themeBorder pb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> Interactive Shortcode Generator
+            </h3>
+            <p class="text-xs text-slate-400">Select parameters to live-generate embeddable shortcodes for posts or layout widgets</p>
+          </div>
+          <span class="self-start sm:self-auto px-2.5 py-1 rounded bg-purple-500/10 text-purple-300 text-xs font-mono border border-purple-500/20">Live Tool</span>
+        </div>
+
+        <!-- Controls Form -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+          <!-- Content Label -->
+          <div class="space-y-1.5">
+            <label class="font-bold text-slate-300">Category Label / TMDb Genre</label>
+            <input type="text" id="gen-label" value="Trending Now" class="w-full bg-[#11141c] border border-themeBorder rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500 transition-colors">
+          </div>
+
+          <!-- Layout Style -->
+          <div class="space-y-1.5">
+            <label class="font-bold text-slate-300">Layout Style</label>
+            <select id="gen-style" class="w-full bg-[#11141c] border border-themeBorder rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500 transition-colors">
+              <option value="carousel">Carousel (Horizontal No-Wrap)</option>
+              <option value="grid">Responsive Grid</option>
+              <option value="top-list">Top-10 Rank Badges</option>
+              <option value="wide-list">Wide Banner Cards</option>
+              <option value="filtered-switch">Filtered Switcher Tabs</option>
+            </select>
+          </div>
+
+          <!-- Items Count -->
+          <div class="space-y-1.5">
+            <label class="font-bold text-slate-300">Items Count (Limit)</label>
+            <input type="number" id="gen-count" value="12" min="1" max="30" class="w-full bg-[#11141c] border border-themeBorder rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500 transition-colors">
+          </div>
+
+          <!-- Sorting Mode -->
+          <div class="space-y-1.5">
+            <label class="font-bold text-slate-300">Sorting Mode</label>
+            <select id="gen-sort" class="w-full bg-[#11141c] border border-themeBorder rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500 transition-colors">
+              <option value="popularity.desc">Popularity (Descending)</option>
+              <option value="vote_average.desc">Rating / Top Rated</option>
+              <option value="release_date.desc">Release Date (Newest)</option>
+              <option value="revenue.desc">Box Office Revenue</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Generated Output Box -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-slate-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-terminal text-purple-400"></i> Generated Shortcode / Engine Code:
+            </span>
+            <span id="copy-status" class="text-emerald-400 font-semibold hidden">Copied to Clipboard!</span>
+          </div>
+
+          <!-- Mobile responsive code container with overflow-x: auto so characters never squish vertically -->
+          <div class="w-full overflow-x-auto rounded-xl bg-[#0c0e14] border border-themeBorder p-4">
+            <pre class="text-xs font-mono text-purple-300 whitespace-pre" id="shortcode-output-box"></pre>
+          </div>
+
+          <!-- 1-Click Copy Shortcode Button (stretches full width on mobile) -->
+          <button id="copy-shortcode-btn" type="button" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-bold text-xs inline-flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30 transition-all">
+            <i class="fa-solid fa-copy"></i>
+            <span>Copy Shortcode</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Shortcode Variations Explanation Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+        <div class="p-4 rounded-xl bg-themeCard border border-themeBorder space-y-2">
+          <div class="text-xs font-bold text-purple-400 uppercase tracking-wide">Carousel No-Wrap</div>
+          <p class="text-xs text-slate-400">Smooth scrolling horizontal ribbon with left/right desktop arrows and swipe controls on mobile screens.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-themeCard border border-themeBorder space-y-2">
+          <div class="text-xs font-bold text-purple-400 uppercase tracking-wide">Top-10 Rank Badges</div>
+          <p class="text-xs text-slate-400">Displays prominent numerical rank overlays (Top 1 through Top 10) styling like Netflix and iQiyi top charts.</p>
+        </div>
+        <div class="p-4 rounded-xl bg-themeCard border border-themeBorder space-y-2">
+          <div class="text-xs font-bold text-purple-400 uppercase tracking-wide">Filtered Switcher</div>
+          <p class="text-xs text-slate-400">Tab pills (All, Movies, TV Series, Anime) allowing users to switch category filters without reloading the page.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: CREATING A POST -->
+    <section id="creating-post" class="scroll-mt-24 space-y-6">
+      <div class="flex items-center gap-3 border-b border-themeBorder pb-3">
+        <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-sm">4</div>
+        <div>
+          <h2 class="text-xl font-bold text-white">Creating a Post (Full HTML View Template)</h2>
+          <p class="text-xs text-slate-400">Complete markup schema including backdrop, poster, iframe, #extra-meta, #episodes-data, #download-data, and #celebrity-data</p>
+        </div>
+      </div>
+
+      <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-4">
+        <p class="text-xs text-slate-300 leading-relaxed">
+          While iQPlay supports fully automated TMDb fetching by ID, you can also publish custom manual articles or overrides in Blogger. Switch your post editor to <b>HTML view</b> and paste this complete schema:
+        </p>
+
+        <!-- Post Template Code Box -->
+        <div class="w-full overflow-x-auto rounded-xl bg-[#0c0e14] border border-themeBorder p-4">
+          <pre class="text-xs font-mono text-slate-300 whitespace-pre" id="post-template-code">&lt;!-- iQPlay Universal Post Schema --&gt;
+&lt;div class="iqplay-post-entry"&gt;
+
+  &lt;!-- 1. Backdrop &amp; Poster Images --&gt;
+  &lt;div class="iq-hero-art"&gt;
+    &lt;img id="post-backdrop" src="https://image.tmdb.org/t/p/w1280/backdrop.jpg" alt="Backdrop Banner" style="display:none;" /&gt;
+    &lt;img id="post-poster" src="https://image.tmdb.org/t/p/w500/poster.jpg" alt="Official Poster" class="main-poster" /&gt;
+  &lt;/div&gt;
+
+  &lt;!-- 2. Primary Video Stream / Embed Iframe --&gt;
+  &lt;div class="iq-player-container"&gt;
+    &lt;iframe id="main-stream-player" src="https://vidsrc.cc/v2/embed/movie/1022789" frameborder="0" allowfullscreen="true" scrolling="no"&gt;&lt;/iframe&gt;
+  &lt;/div&gt;
+
+  &lt;!-- 3. Extra Meta Data (JSON Block) --&gt;
+  &lt;div id="extra-meta" style="display:none;"&gt;{
+    "tmdb_id": 1022789,
+    "imdb_id": "tt11198330",
+    "type": "movie",
+    "release_year": "2024",
+    "runtime": "100 min",
+    "rating": "7.8",
+    "quality": "4K Ultra HD",
+    "genres": ["Animation", "Family", "Adventure", "Comedy"],
+    "synopsis": "Teenager Riley is experiencing new emotions inside Headquarters, including Anxiety, Envy, Ennui, and Embarrassment."
+  }&lt;/div&gt;
+
+  &lt;!-- 4. Episodes Multi-Server Data (For Series / Anime) --&gt;
+  &lt;div id="episodes-data" style="display:none;"&gt;[
+    {
+      "season": 1,
+      "episode": 1,
+      "title": "Pilot: The Journey Begins",
+      "servers": {
+        "VidSrc": "https://vidsrc.cc/v2/embed/tv/60625/1/1",
+        "Videasy": "https://player.videasy.net/tv/60625/1/1",
+        "VidRock": "https://vidrock.net/embed/60625-1-1"
+      }
+    },
+    {
+      "season": 1,
+      "episode": 2,
+      "title": "Into the Unknown",
+      "servers": {
+        "VidSrc": "https://vidsrc.cc/v2/embed/tv/60625/1/2",
+        "Videasy": "https://player.videasy.net/tv/60625/1/2",
+        "VidRock": "https://vidrock.net/embed/60625-1-2"
+      }
+    }
+  ]&lt;/div&gt;
+
+  &lt;!-- 5. Download Links Data (Multi-Quality) --&gt;
+  &lt;div id="download-data" style="display:none;"&gt;[
+    {"server": "Mega Drive", "resolution": "1080p Web-DL", "size": "2.1 GB", "url": "https://mega.nz/file/sample1"},
+    {"server": "Google Drive", "resolution": "720p HD", "size": "950 MB", "url": "https://drive.google.com/file/d/sample2"},
+    {"server": "Direct Filer", "resolution": "480p SD", "size": "450 MB", "url": "https://filer.org/dl/sample3"}
+  ]&lt;/div&gt;
+
+  &lt;!-- 6. Celebrity &amp; Cast Data --&gt;
+  &lt;div id="celebrity-data" style="display:none;"&gt;[
+    {"name": "Amy Poehler", "character": "Joy (voice)", "photo": "https://image.tmdb.org/t/p/w185/AmyPoehler.jpg"},
+    {"name": "Maya Hawke", "character": "Anxiety (voice)", "photo": "https://image.tmdb.org/t/p/w185/MayaHawke.jpg"},
+    {"name": "Phyllis Smith", "character": "Sadness (voice)", "photo": "https://image.tmdb.org/t/p/w185/PhyllisSmith.jpg"}
+  ]&lt;/div&gt;
+
+&lt;/div&gt;</pre>
+        </div>
+
+        <!-- 1-Click Copy Post Schema Button -->
+        <button id="copy-post-code-btn" type="button" class="w-full sm:w-auto px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs inline-flex items-center justify-center gap-2 transition-all shadow-md shadow-purple-600/30">
+          <i class="fa-solid fa-copy"></i>
+          <span>Copy Post Schema Code</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- SECTION 5: USER SYSTEM, AVATARS & NOTIFICATIONS -->
+    <section id="user-system" class="scroll-mt-24 space-y-6">
+      <div class="flex items-center gap-3 border-b border-themeBorder pb-3">
+        <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-sm">5</div>
+        <div>
+          <h2 class="text-xl font-bold text-white">User System, Avatars & Notifications</h2>
+          <p class="text-xs text-slate-400">Supabase authentication, anime avatar packs, live comment reactions, and broadcast push toasts</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Supabase Client Setup -->
+        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
+          <div class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-database text-emerald-400"></i> Supabase Cloud Auth & Comments
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            iQPlay connects directly to Supabase REST endpoints for clientless zero-server user login, watchlist sync across devices, and live episode discussions:
+          </p>
+          <div class="bg-[#11141c] p-3 rounded-lg border border-themeBorder text-[11px] font-mono text-slate-300">
+            <span class="text-purple-400">const</span> { createClient } = supabase;<br>
+            <span class="text-purple-400">const</span> client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          </div>
+          <ul class="text-xs text-slate-300 list-disc list-inside space-y-1">
+            <li><b>Real-time comments:</b> Post reactions & live reply feeds</li>
+            <li><b>Custom avatars:</b> Person, Animal, Animation, and Emoji categories</li>
+            <li><b>Persistent watchlist:</b> Saved directly to user cloud account</li>
+          </ul>
+        </div>
+
+        <!-- Notification Center -->
+        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
+          <div class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-bell text-amber-400"></i> Floating Notification & Toast Center
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Instant feedback on actions like adding titles to watchlists, copying share URLs, and switching stream mirrors:
+          </p>
+          <div class="p-3 rounded-lg bg-[#11141c] border border-themeBorder space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-300 font-mono">showToastNotification(msg, type)</span>
+              <button onclick="triggerToastDemo()" class="text-[10px] px-2 py-0.5 rounded bg-purple-600 text-white font-semibold hover:bg-purple-500">Test Toast</button>
+            </div>
+            <div class="text-[11px] text-slate-400">
+              Supports <code class="text-emerald-400">'success'</code>, <code class="text-amber-400">'info'</code>, and <code class="text-rose-400">'error'</code> toast alerts automatically positioned at bottom screen.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: COMMUNITY & SOCIALS -->
+    <section id="community" class="scroll-mt-24 space-y-6">
+      <div class="flex items-center gap-3 border-b border-themeBorder pb-3">
+        <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-sm">6</div>
+        <div>
+          <h2 class="text-xl font-bold text-white">Community & Socials</h2>
+          <p class="text-xs text-slate-400">Connect with Ayeng Coding, join developer groups, report bugs, and purchase official licenses</p>
+        </div>
+      </div>
+
+      <!-- Links Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Gumroad Store -->
+        <a href="https://ayengstore.gumroad.com/l/iqplay" target="_blank" rel="noopener" class="p-5 rounded-xl bg-gradient-to-br from-purple-900/30 via-themeCard to-themeCard border border-purple-500/30 hover:border-purple-500 transition-all group">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+              <i class="fa-solid fa-crown text-amber-300"></i>
+            </div>
+            <span class="text-[10px] uppercase font-bold text-purple-300 tracking-wider">Official Store</span>
+          </div>
+          <h3 class="text-sm font-bold text-white mb-1">Gumroad License Store</h3>
+          <p class="text-xs text-slate-400">Get lifetime updates, premium source files, and VIP support for iQPlay.</p>
+        </a>
+
+        <!-- Telegram Official Community -->
+        <a href="https://t.me/ayengcodingofficial" target="_blank" rel="noopener" class="p-5 rounded-xl bg-themeCard border border-themeBorder hover:border-sky-500/50 transition-all group">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+              <i class="fa-brands fa-telegram"></i>
+            </div>
+            <span class="text-[10px] uppercase font-bold text-sky-400 tracking-wider">Group Chat</span>
+          </div>
+          <h3 class="text-sm font-bold text-white mb-1">Telegram Community</h3>
+          <p class="text-xs text-slate-400">@ayengcodingofficial — Connect with hundreds of webmasters and stream developers.</p>
+        </a>
+
+        <!-- Telegram Channel -->
+        <a href="https://t.me/ayeng_coding" target="_blank" rel="noopener" class="p-5 rounded-xl bg-themeCard border border-themeBorder hover:border-sky-500/50 transition-all group">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+              <i class="fa-solid fa-bullhorn"></i>
+            </div>
+            <span class="text-[10px] uppercase font-bold text-sky-400 tracking-wider">Broadcast</span>
+          </div>
+          <h3 class="text-sm font-bold text-white mb-1">Telegram Channel</h3>
+          <p class="text-xs text-slate-400">@ayeng_coding — Product releases, update changelogs, and security patches.</p>
+        </a>
+
+        <!-- Direct Support -->
+        <a href="https://t.me/ayengcoding" target="_blank" rel="noopener" class="p-5 rounded-xl bg-themeCard border border-themeBorder hover:border-purple-500/50 transition-all group">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+              <i class="fa-solid fa-headset"></i>
+            </div>
+            <span class="text-[10px] uppercase font-bold text-purple-400 tracking-wider">Direct Message</span>
+          </div>
+          <h3 class="text-sm font-bold text-white mb-1">Personal Support</h3>
+          <p class="text-xs text-slate-400">@ayengcoding — Reach author Ariel Mentawan for theme setups and customizations.</p>
+        </a>
+
+        <!-- Facebook -->
+        <a href="https://www.facebook.com/acohcayeng" target="_blank" rel="noopener" class="p-5 rounded-xl bg-themeCard border border-themeBorder hover:border-blue-500/50 transition-all group">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+              <i class="fa-brands fa-facebook"></i>
+            </div>
+            <span class="text-[10px] uppercase font-bold text-blue-400 tracking-wider">Profile</span>
+          </div>
+          <h3 class="text-sm font-bold text-white mb-1">Facebook Profile</h3>
+          <p class="text-xs text-slate-400">acohcayeng — Collaborations, theme updates, and tech discussions.</p>
+        </a>
+
+        <!-- Instagram -->
+        <a href="https://www.instagram.com/acoh_cariel/" target="_blank" rel="noopener" class="p-5 rounded-xl bg-themeCard border border-themeBorder hover:border-pink-500/50 transition-all group">
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-10 h-10 rounded-lg bg-pink-500/10 text-pink-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
+              <i class="fa-brands fa-instagram"></i>
+            </div>
+            <span class="text-[10px] uppercase font-bold text-pink-400 tracking-wider">Follow</span>
+          </div>
+          <h3 class="text-sm font-bold text-white mb-1">Instagram</h3>
+          <p class="text-xs text-slate-400">@acoh_cariel — Behind the scenes and upcoming theme previews.</p>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="w-full bg-[#11141c] border-t border-themeBorder py-8 px-4 text-center text-xs text-slate-500 space-y-2 mt-12">
+    <div class="flex items-center justify-center gap-2 text-slate-400 font-semibold">
+      <span>iQPlay TMDB Blogger Streaming Theme</span>
+      <span>•</span>
+      <span>Engineered by <a href="https://github.com/ayengcoding" class="text-purple-400 hover:underline">Ayeng Coding</a></span>
+    </div>
+    <p>© 2026 Ayeng Coding. All rights reserved. Designed for Blogger CMS developers.</p>
+  </footer>
+
+  <!-- Notification Toast Container -->
+  <div id="docs-toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 px-4 py-2.5 rounded-xl bg-purple-600 text-white text-xs font-semibold shadow-xl shadow-purple-600/30 flex items-center gap-2">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="docs-toast-msg">Notification</span>
+  </div>
+
+  <!-- JAVASCRIPT: SHORTCODE GENERATOR & SCROLLSPY AUTO-CENTER -->
+  <script>
+    // 5. Shortcode Generator Logic
+    const labelInput = document.getElementById('gen-label');
+    const styleInput = document.getElementById('gen-style');
+    const countInput = document.getElementById('gen-count');
+    const sortInput = document.getElementById('gen-sort');
+    const outputBox = document.getElementById('shortcode-output-box');
+    const copyBtn = document.getElementById('copy-shortcode-btn');
+    const copyStatus = document.getElementById('copy-status');
+    const copyPostBtn = document.getElementById('copy-post-code-btn');
+
+    function updateShortcode() {
+      const label = labelInput.value.trim() || 'Featured Content';
+      const style = styleInput.value;
+      const count = countInput.value || 12;
+      const sort = sortInput.value;
+
+      let code = '';
+      if (style === 'carousel') {
+        code = `<!-- iQPlay Carousel Rail (Horizontal Scroll) -->
+<div class="tmdb-wrapper" data-label="${label}" data-limit="${count}" data-sort="${sort}">
+  <div class="tmdb-header">
+    <h3 class="tmdb-title">${label}</h3>
+    <div class="tmdb-nav-arrows">
+      <button class="tmdb-scroll left" aria-label="Previous">&larr;</button>
+      <button class="tmdb-scroll right" aria-label="Next">&rarr;</button>
+    </div>
+  </div>
+  <div class="tmdb-row nowrap-carousel" data-query="discover/movie?sort_by=${sort}&page=1"></div>
+</div>`;
+      } else if (style === 'grid') {
+        code = `<!-- iQPlay Responsive Grid Layout -->
+<div class="tmdb-grid-wrapper" data-label="${label}" data-limit="${count}">
+  <h3 class="tmdb-title">${label}</h3>
+  <div class="tmdb-cards-grid" data-query="discover/tv?sort_by=${sort}&page=1"></div>
+</div>`;
+      } else if (style === 'top-list') {
+        code = `<!-- iQPlay Top-10 Ranked Chart -->
+<div class="tmdb-toplist-wrapper" data-label="${label}" data-limit="${count}">
+  <h3 class="tmdb-title font-extrabold">${label} (Top Rated)</h3>
+  <div class="tmdb-top-rank-rail" data-query="trending/all/week"></div>
+</div>`;
+      } else if (style === 'wide-list') {
+        code = `<!-- iQPlay Wide Banner Cards -->
+<div class="tmdb-wide-wrapper" data-label="${label}">
+  <h3 class="tmdb-title">${label}</h3>
+  <div class="tmdb-wide-slider" data-query="movie/now_playing?page=1"></div>
+</div>`;
+      } else if (style === 'filtered-switch') {
+        code = `<!-- iQPlay Filter Switcher Rail -->
+<div class="tmdb-filtered-wrapper" data-label="${label}">
+  <div class="filter-switch-nav">
+    <button class="filter-tab active" data-filter="all">All</button>
+    <button class="filter-tab" data-filter="movie">Movies</button>
+    <button class="filter-tab" data-filter="tv">TV Series</button>
+    <button class="filter-tab" data-filter="anime">Anime</button>
+  </div>
+  <div class="tmdb-row" data-query="discover/movie?sort_by=${sort}&page=1"></div>
+</div>`;
+      }
+
+      outputBox.textContent = code;
+    }
+
+    [labelInput, styleInput, countInput, sortInput].forEach(el => {
+      el.addEventListener('input', updateShortcode);
+      el.addEventListener('change', updateShortcode);
+    });
+    updateShortcode();
+
+    // Copy to clipboard helper
+    function showToast(message) {
+      const toast = document.getElementById('docs-toast');
+      const toastMsg = document.getElementById('docs-toast-msg');
+      if (toast && toastMsg) {
+        toastMsg.textContent = message;
+        toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+          toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+        }, 2500);
+      }
+    }
+
+    function triggerToastDemo() {
+      showToast("Added 'Clayface (2026)' to Watchlist!");
+    }
+
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(outputBox.textContent).then(() => {
+        copyStatus.classList.remove('hidden');
+        showToast('Shortcode copied to clipboard!');
+        setTimeout(() => copyStatus.classList.add('hidden'), 2500);
+      });
+    });
+
+    if (copyPostBtn) {
+      copyPostBtn.addEventListener('click', () => {
+        const postCode = document.getElementById('post-template-code').textContent;
+        navigator.clipboard.writeText(postCode).then(() => {
+          showToast('Post schema copied to clipboard!');
+        });
+      });
+    }
+
+    // 4. Scrollspy & Auto-Center Navigation Tabs
+    const navTabsContainer = document.getElementById('sticky-header-tabs');
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const sectionIds = Array.from(tabLinks).map(t => t.getAttribute('data-target'));
+    const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+
+    function updateScrollspy() {
+      const scrollPos = window.scrollY + 120;
+      let currentSectionId = '';
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const sec = sections[i];
+        if (sec.offsetTop <= scrollPos) {
+          currentSectionId = sec.id;
+          break;
+        }
+      }
+
+      if (!currentSectionId && sections.length > 0) {
+        currentSectionId = sections[0].id;
+      }
+
+      tabLinks.forEach(tab => {
+        const target = tab.getAttribute('data-target');
+        if (target === currentSectionId) {
+          if (!tab.classList.contains('active')) {
+            tab.classList.add('active');
+            // Auto-center the active tab horizontally in sticky header
+            const containerWidth = navTabsContainer.clientWidth;
+            const tabLeft = tab.offsetLeft;
+            const tabWidth = tab.clientWidth;
+            navTabsContainer.scrollTo({
+              left: tabLeft - (containerWidth / 2) + (tabWidth / 2),
+              behavior: 'smooth'
+            });
+          }
+        } else {
+          tab.classList.remove('active');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', updateScrollspy, { passive: true });
+    window.addEventListener('resize', updateScrollspy);
+    document.addEventListener('DOMContentLoaded', updateScrollspy);
+  </script>
+</body>
+</html>
