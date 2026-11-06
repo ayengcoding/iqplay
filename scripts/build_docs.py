@@ -1,0 +1,2224 @@
+import os
+import shutil
+
+html_template = """<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>iQPlay TMDB — Modern Blogger Streaming Theme Documentation</title>
+  <meta name="description" content="Official documentation, TMDb API v3 setup, Supabase user system, multi-server video player, and layout engine for iQPlay TMDB Blogger streaming theme.">
+  
+  <!-- Favicon / Brand Icon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    /* ========================================================
+       CSS DESIGN TOKENS & DUAL THEME ENGINE
+       ======================================================== */
+    :root {
+      /* Brand Color Accent */
+      --brand: #9333ea;
+      --brand-hover: #a855f7;
+      --brand-light: #f3e8ff;
+      --brand-border: rgba(147, 51, 234, 0.35);
+      --brand-glow: rgba(147, 51, 234, 0.22);
+      
+      /* Light Mode Palette */
+      --bg-page: #ffffff;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f8fafc;
+      --bg-sidebar: #f8fafc;
+      --border: #e5e7eb;
+      --border-subtle: #f1f5f9;
+      --text: #111827;
+      --text-muted: #64748b;
+      --text-subtle: #94a3b8;
+      
+      /* Code Blocks */
+      --code-bg: #0f172a;
+      --code-header: #1e293b;
+      --code-text: #e2e8f0;
+      
+      /* Sizing Metrics */
+      --nav-height-tier1: 56px;
+      --nav-height-tier2: 44px;
+      --header-total: 100px;
+      --sidebar-width: 288px;
+    }
+
+    html.dark {
+      /* Dark Brand Accent */
+      --brand: #a855f7;
+      --brand-hover: #c084fc;
+      --brand-light: rgba(147, 51, 234, 0.18);
+      --brand-border: rgba(168, 85, 247, 0.35);
+      --brand-glow: rgba(168, 85, 247, 0.25);
+      
+      /* Deep Rich Slate Mode */
+      --bg-page: #0b0f17;
+      --bg-surface: #111827;
+      --bg-subtle: #1e293b;
+      --bg-sidebar: #0e131f;
+      --border: #1f2937;
+      --border-subtle: #1a2234;
+      --text: #f9fafb;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+      
+      /* Code Blocks */
+      --code-bg: #080c14;
+      --code-header: #111827;
+      --code-text: #f1f5f9;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* Ambient background gradient glow */
+    body::before {
+      content: "";
+      position: fixed;
+      top: -150px;
+      right: 12%;
+      width: 550px;
+      height: 450px;
+      background: radial-gradient(circle, var(--brand-glow) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(60px);
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-page);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* ========================================================
+       STICKY 2-TIER HEADER (MOBILE OPTIMIZED)
+       ======================================================== */
+    .header-wrapper {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Tier 1: Main Header */
+    .header-tier1 {
+      height: var(--nav-height-tier1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .brand-logo-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--brand), #ec4899);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 15px;
+      box-shadow: 0 4px 12px var(--brand-glow);
+    }
+
+    .brand-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .brand-title .platform-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      background: rgba(255, 87, 34, 0.15);
+      color: #ff5722;
+      border: 1px solid rgba(255, 87, 34, 0.25);
+    }
+
+    /* Version dropdown pill */
+    .version-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .version-pill {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s ease;
+    }
+
+    .version-pill:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+
+    /* Center search input trigger */
+    .search-trigger-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.45rem 0.85rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 260px;
+      max-width: 380px;
+    }
+
+    .search-trigger-btn:hover {
+      border-color: var(--brand);
+      color: var(--text);
+      background: var(--bg-surface);
+      box-shadow: 0 0 0 3px var(--brand-glow);
+    }
+
+    .search-trigger-btn .kbd-shortcut {
+      margin-left: auto;
+      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0.15rem 0.4rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text-subtle);
+    }
+
+    /* Actions right */
+    .tier1-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .btn-action-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      color: var(--text);
+    }
+
+    .btn-action-pill:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+
+    .icon-square-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.15s ease;
+    }
+
+    .icon-square-btn:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+      background: var(--bg-surface);
+    }
+
+    .hamburger-btn {
+      display: none;
+    }
+
+    /* Tier 2: Sub-Navigation Horizontal Tabs */
+    .header-tier2 {
+      height: var(--nav-height-tier2);
+      display: flex;
+      align-items: center;
+      padding: 0 1.25rem;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .header-tier2::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tier2-tabs {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .tier2-tab-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 7px;
+      text-decoration: none;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+    }
+
+    .tier2-tab-link:hover {
+      color: var(--text);
+      background: var(--bg-subtle);
+    }
+
+    .tier2-tab-link.active {
+      color: var(--brand);
+      background: var(--brand-light);
+      border-color: var(--brand-border);
+    }
+
+    .tier2-tab-link.special-buy {
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .tier2-tab-link.special-buy:hover {
+      background: rgba(16, 185, 129, 0.22);
+    }
+
+    /* ========================================================
+       PAGE CONTAINER & SIDEBAR LAYOUT
+       ======================================================== */
+    .page-wrapper {
+      flex: 1;
+      display: grid;
+      grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* Left Sidebar */
+    .sidebar {
+      position: sticky;
+      top: var(--header-total);
+      height: calc(100vh - var(--header-total));
+      overflow-y: auto;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      padding: 1.25rem 0.85rem 2.5rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      z-index: 30;
+    }
+
+    .sidebar-group-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-subtle);
+      margin-bottom: 0.5rem;
+      padding-left: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .sidebar-nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.45rem 0.65rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .sidebar-link i {
+      font-size: 0.85rem;
+      width: 16px;
+      text-align: center;
+      opacity: 0.8;
+    }
+
+    .sidebar-link:hover {
+      color: var(--text);
+      background: var(--bg-subtle);
+    }
+
+    .sidebar-link.active {
+      color: var(--brand);
+      background: var(--brand-light);
+      font-weight: 600;
+    }
+
+    .sidebar-link.active::before {
+      content: "";
+      position: absolute;
+      left: -0.25rem;
+      top: 20%;
+      height: 60%;
+      width: 3px;
+      background: var(--brand);
+      border-radius: 2px;
+    }
+
+    /* Sidebar Footer / Connect Box */
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .sidebar-footer-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-subtle);
+      margin-bottom: 0.6rem;
+      padding-left: 0.25rem;
+    }
+
+    .social-quick-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.35rem;
+    }
+
+    .social-quick-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 34px;
+      border-radius: 7px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: all 0.15s ease;
+    }
+
+    .social-quick-link:hover {
+      color: var(--brand);
+      border-color: var(--brand);
+      transform: translateY(-2px);
+    }
+
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 95;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .sidebar-backdrop.active {
+      display: block;
+      opacity: 1;
+    }
+
+    /* ========================================================
+       MAIN ARTICLE CONTENT AREA
+       ======================================================== */
+    .doc-content-area {
+      padding: 2.25rem 2.5rem 5rem 2.5rem;
+      max-width: 920px;
+      width: 100%;
+    }
+
+    /* Article Header */
+    .article-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .article-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.65rem;
+      border-radius: 9999px;
+      background: var(--brand-light);
+      color: var(--brand);
+      border: 1px solid var(--brand-border);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.75rem;
+    }
+
+    .article-title {
+      font-size: 2.1rem;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.6rem;
+    }
+
+    .article-lead {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Subheadings & Content Typography */
+    .doc-content-area h2 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 2.25rem 0 1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text);
+    }
+
+    .doc-content-area h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 1.5rem 0 0.75rem 0;
+      color: var(--text);
+    }
+
+    .doc-content-area p {
+      margin-bottom: 1.15rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .doc-content-area strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .doc-content-area a {
+      color: var(--brand);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .doc-content-area a:hover {
+      color: var(--brand-hover);
+    }
+
+    .doc-content-area ul, .doc-content-area ol {
+      margin-bottom: 1.25rem;
+      padding-left: 1.4rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .doc-content-area li {
+      margin-bottom: 0.45rem;
+    }
+
+    /* Step items */
+    .step-item {
+      display: flex;
+      gap: 1rem;
+      margin: 1.25rem 0;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.15rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .step-item:hover {
+      border-color: var(--brand);
+    }
+
+    .step-badge {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 10px var(--brand-glow);
+    }
+
+    .step-body h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      color: var(--text);
+    }
+
+    .step-body p {
+      font-size: 0.88rem;
+      margin-bottom: 0;
+      color: var(--text-muted);
+    }
+
+    /* Callout Cards */
+    .callout {
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin: 1.25rem 0;
+      font-size: 0.9rem;
+      display: flex;
+      gap: 0.85rem;
+      align-items: flex-start;
+      border-left: 4px solid;
+    }
+
+    .callout i {
+      font-size: 1.1rem;
+      margin-top: 0.15rem;
+      flex-shrink: 0;
+    }
+
+    .callout-info {
+      background: rgba(59, 130, 246, 0.08);
+      border-left-color: #3b82f6;
+      color: var(--text);
+    }
+    .callout-info i { color: #3b82f6; }
+
+    .callout-tip {
+      background: rgba(16, 185, 129, 0.08);
+      border-left-color: #10b981;
+      color: var(--text);
+    }
+    .callout-tip i { color: #10b981; }
+
+    .callout-warning {
+      background: rgba(245, 158, 11, 0.08);
+      border-left-color: #f59e0b;
+      color: var(--text);
+    }
+    .callout-warning i { color: #f59e0b; }
+
+    /* Code Blocks */
+    .code-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin: 1.25rem 0;
+      overflow: hidden;
+    }
+
+    .code-box-header {
+      background: var(--code-header);
+      padding: 0.45rem 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .code-copy-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 5px;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.72rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .code-copy-btn:hover {
+      background: var(--brand);
+      color: #ffffff;
+      border-color: var(--brand);
+    }
+
+    .code-box pre {
+      padding: 1rem;
+      overflow-x: auto;
+      margin: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--code-text);
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85em;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      color: var(--brand);
+    }
+
+    .code-box code {
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* Interactive Live Builder inside docs */
+    .tool-sandbox-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.35rem;
+      margin: 1.5rem 0;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .tool-field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .tool-field input, .tool-field select {
+      width: 100%;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.88rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s ease;
+      font-family: inherit;
+    }
+
+    .tool-field input:focus, .tool-field select:focus {
+      border-color: var(--brand);
+    }
+
+    /* Pager Navigation */
+    .bottom-pager-nav {
+      margin-top: 3.5rem;
+      padding-top: 1.75rem;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .pager-card {
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-surface);
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .pager-card:hover {
+      border-color: var(--brand);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px var(--brand-glow);
+    }
+
+    .pager-card.pager-next {
+      text-align: right;
+    }
+
+    .pager-direction {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .pager-card.pager-next .pager-direction {
+      justify-content: flex-end;
+    }
+
+    .pager-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Search Modal */
+    .search-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 100;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 70px 16px 20px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .search-modal-backdrop.open {
+      display: flex;
+      opacity: 1;
+    }
+
+    .search-modal-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+      animation: modalSlide 0.2s ease forwards;
+    }
+
+    @keyframes modalSlide {
+      from { transform: translateY(-15px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .search-modal-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.9rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-modal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    .search-modal-results {
+      max-height: 380px;
+      overflow-y: auto;
+      padding: 0.6rem;
+    }
+
+    .search-result-item {
+      padding: 0.75rem 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: block;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    }
+
+    .search-result-item:hover, .search-result-item.selected {
+      background: var(--bg-subtle);
+    }
+
+    .search-result-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      background: var(--brand-light);
+      color: var(--brand);
+      margin-bottom: 0.25rem;
+      display: inline-block;
+    }
+
+    .search-result-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.15rem;
+    }
+
+    .search-result-lead {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .search-modal-footer {
+      padding: 0.6rem 1.1rem;
+      border-top: 1px solid var(--border);
+      background: var(--bg-subtle);
+      font-size: 0.75rem;
+      color: var(--text-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Toast Notification */
+    .toast-box {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: #ffffff;
+      border: 1px solid #334155;
+      padding: 0.65rem 1.1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      z-index: 120;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: all 0.25s ease;
+    }
+
+    .toast-box.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    /* ========================================================
+       RESPONSIVE BREAKPOINTS (Mobile <= 960px)
+       ======================================================== */
+    @media (max-width: 960px) {
+      .page-wrapper {
+        grid-template-columns: 1fr;
+      }
+
+      .doc-content-area {
+        padding: 1.5rem 1.1rem 4rem 1.1rem;
+      }
+
+      .hamburger-btn {
+        display: flex;
+      }
+
+      /* Hide desktop elements on Tier 1 */
+      .desktop-only {
+        display: none !important;
+      }
+
+      .search-trigger-btn {
+        display: none !important;
+      }
+
+      /* Mobile drawer */
+      .sidebar {
+        position: fixed;
+        inset-block: 0;
+        left: 0;
+        width: 300px;
+        max-width: 85vw;
+        height: 100vh;
+        z-index: 100;
+        transform: translateX(-100%);
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.25);
+        padding-top: 1.5rem;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      /* Full width bottom pager */
+      .bottom-pager-nav {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+      }
+
+      .pager-card {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      .pager-card.pager-next {
+        text-align: left;
+      }
+
+      .pager-card.pager-next .pager-direction {
+        justify-content: flex-start;
+      }
+
+      .article-title {
+        font-size: 1.65rem;
+      }
+
+      .search-modal-backdrop {
+        padding: 50px 16px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- STICKY 2-TIER HEADER -->
+  <header class="header-wrapper" id="top-header">
+    <!-- Tier 1: Main Header Bar -->
+    <div class="header-tier1">
+      <!-- Mobile Hamburger Button -->
+      <button class="icon-square-btn hamburger-btn" id="hamburger-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <!-- Brand Logo + Theme Name -->
+      <a href="#intro" class="brand-section">
+        <div class="brand-logo-badge"><i class="fa-solid fa-play"></i></div>
+        <div class="brand-title">
+          <span>iQPlay</span>
+          <span class="platform-tag">Blogger XML</span>
+        </div>
+      </a>
+
+      <!-- Desktop Version Pill Dropdown -->
+      <div class="version-dropdown desktop-only">
+        <div class="version-pill" title="Current Stable Version">
+          <i class="fa-solid fa-code-branch text-xs"></i>
+          <span>v2.4.0</span>
+          <i class="fa-solid fa-chevron-down text-[10px]"></i>
+        </div>
+      </div>
+
+      <!-- Center Live Search Input Trigger (Desktop) -->
+      <button class="search-trigger-btn desktop-only" id="search-trigger-desktop" aria-label="Search Documentation">
+        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+        <span>Search documentation...</span>
+        <span class="kbd-shortcut">Ctrl K</span>
+      </button>
+
+      <!-- Actions Right (Theme Toggle, Live Demo, GitHub) -->
+      <div class="tier1-actions">
+        <!-- Live Demo (Desktop) -->
+        <a href="https://iqplayofficial.blogspot.com/" target="_blank" rel="noopener" class="btn-action-pill desktop-only">
+          <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+          <span>Live Demo</span>
+        </a>
+
+        <!-- GitHub Repo Link Pill (Desktop) -->
+        <a href="https://github.com/ayengcoding/iqplay" target="_blank" rel="noopener" class="btn-action-pill desktop-only">
+          <i class="fa-brands fa-github"></i>
+          <span>ayengcoding/iqplay</span>
+        </a>
+
+        <!-- Mobile Search Button (Phone) -->
+        <button class="icon-square-btn" id="search-trigger-mobile" aria-label="Search Documentation">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+
+        <!-- Theme Switcher (Persistent Dark / Light) -->
+        <button class="icon-square-btn" id="theme-toggle-btn" aria-label="Switch Theme Mode">
+          <i class="fa-solid fa-sun" id="theme-icon-sun" style="display: none;"></i>
+          <i class="fa-solid fa-moon" id="theme-icon-moon"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tier 2: Sub-Navigation Horizontal Tabs -->
+    <nav class="header-tier2" aria-label="Sub-navigation Tabs">
+      <div class="tier2-tabs">
+        <a href="#intro" class="tier2-tab-link active" data-doc="intro">
+          <i class="fa-solid fa-book-open text-xs"></i> Documentation
+        </a>
+        <a href="https://github.com/ayengcoding/iqplay" target="_blank" rel="noopener" class="tier2-tab-link">
+          <i class="fa-brands fa-github text-xs"></i> GitHub
+        </a>
+        <a href="https://iqplayofficial.blogspot.com/" target="_blank" rel="noopener" class="tier2-tab-link">
+          <i class="fa-solid fa-film text-xs"></i> Community Live Demo
+        </a>
+        <a href="https://ayengstore.gumroad.com/l/iqplay" target="_blank" rel="noopener" class="tier2-tab-link special-buy">
+          <i class="fa-solid fa-bolt text-xs"></i> Get License ($39.00)
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- OFF-CANVAS BACKDROP OVERLAY -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <!-- PAGE WRAPPER (SIDEBAR + ARTICLE CONTENT) -->
+  <div class="page-wrapper">
+    
+    <!-- LEFT SIDEBAR / OFF-CANVAS MOBILE DRAWER -->
+    <aside class="sidebar" id="doc-sidebar">
+      
+      <!-- Group 1: Get Started -->
+      <div>
+        <div class="sidebar-group-title"><i class="fa-solid fa-compass"></i> Get Started</div>
+        <ul class="sidebar-nav-list">
+          <li><a class="sidebar-link active" data-doc="intro"><i class="fa-solid fa-house"></i> Introduction &amp; Core</a></li>
+          <li><a class="sidebar-link" data-doc="quickstart"><i class="fa-solid fa-bolt"></i> 4-Step Quickstart</a></li>
+          <li><a class="sidebar-link" data-doc="demo-posts"><i class="fa-solid fa-file-import"></i> Import Demo Content</a></li>
+          <li><a class="sidebar-link" data-doc="essential-pages"><i class="fa-solid fa-layer-group"></i> Essential Pages Setup</a></li>
+        </ul>
+      </div>
+
+      <!-- Group 2: General Information -->
+      <div>
+        <div class="sidebar-group-title"><i class="fa-solid fa-shield-halved"></i> General Information</div>
+        <ul class="sidebar-nav-list">
+          <li><a class="sidebar-link" data-doc="license-system"><i class="fa-solid fa-key"></i> License &amp; Domain Lock</a></li>
+          <li><a class="sidebar-link" data-doc="changelog"><i class="fa-solid fa-clock-rotate-left"></i> Development &amp; Changelog</a></li>
+        </ul>
+      </div>
+
+      <!-- Group 3: Dynamic Integrations -->
+      <div>
+        <div class="sidebar-group-title"><i class="fa-solid fa-server"></i> Dynamic Integrations</div>
+        <ul class="sidebar-nav-list">
+          <li><a class="sidebar-link" data-doc="tmdb-config"><i class="fa-solid fa-clapperboard"></i> TMDb API v3 Engine</a></li>
+          <li><a class="sidebar-link" data-doc="supabase-auth"><i class="fa-solid fa-user-lock"></i> Supabase User Auth &amp; Sync</a></li>
+          <li><a class="sidebar-link" data-doc="multi-server"><i class="fa-solid fa-play"></i> Multi-Server Video Players</a></li>
+          <li><a class="sidebar-link" data-doc="counter-comments"><i class="fa-solid fa-comments"></i> Realtime Stats &amp; Comments</a></li>
+        </ul>
+      </div>
+
+      <!-- Group 4: Ecosystem & Formatting -->
+      <div>
+        <div class="sidebar-group-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Ecosystem &amp; Tools</div>
+        <ul class="sidebar-nav-list">
+          <li><a class="sidebar-link" data-doc="shortcode-builder"><i class="fa-solid fa-code"></i> Shortcode Generator</a></li>
+          <li><a class="sidebar-link" data-doc="post-creator"><i class="fa-solid fa-pen-nib"></i> Post Schema Creator</a></li>
+          <li><a class="sidebar-link" data-doc="troubleshooting"><i class="fa-solid fa-wrench"></i> Troubleshooting &amp; FAQ</a></li>
+        </ul>
+      </div>
+
+      <!-- Group 5: Official Community & Socials -->
+      <div>
+        <div class="sidebar-group-title"><i class="fa-solid fa-headset"></i> Official Channels</div>
+        <ul class="sidebar-nav-list">
+          <li><a class="sidebar-link" data-doc="community"><i class="fa-solid fa-users-viewfinder"></i> Community &amp; Support</a></li>
+        </ul>
+      </div>
+
+      <!-- Sidebar Footer / Community Group -->
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-title">Community &amp; Connect</div>
+        <div class="social-quick-grid">
+          <a href="https://t.me/ayeng_coding" target="_blank" rel="noopener" class="social-quick-link" title="Telegram Channel"><i class="fa-brands fa-telegram"></i></a>
+          <a href="https://t.me/ayengcodingofficial" target="_blank" rel="noopener" class="social-quick-link" title="Telegram Group"><i class="fa-solid fa-comments"></i></a>
+          <a href="https://www.facebook.com/acohcayeng" target="_blank" rel="noopener" class="social-quick-link" title="Facebook"><i class="fa-brands fa-facebook"></i></a>
+          <a href="https://www.instagram.com/acoh_cariel/" target="_blank" rel="noopener" class="social-quick-link" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="https://github.com/ayengcoding" target="_blank" rel="noopener" class="social-quick-link" title="GitHub"><i class="fa-brands fa-github"></i></a>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- MAIN ARTICLE CONTAINER -->
+    <main class="doc-content-area" id="main-content" role="main">
+      <!-- Rendered dynamically by JavaScript via DOCS_DATA -->
+      <div id="article-mount"></div>
+
+      <!-- Full-Width Bottom Pager -->
+      <nav class="bottom-pager-nav" id="bottom-pager" aria-label="Article Pagination">
+        <a class="pager-card pager-prev" id="pager-prev-btn" style="visibility: hidden;">
+          <span class="pager-direction"><i class="fa-solid fa-arrow-left"></i> Previous</span>
+          <span class="pager-title" id="pager-prev-title">Previous Article</span>
+        </a>
+        <a class="pager-card pager-next" id="pager-next-btn">
+          <span class="pager-direction">Next <i class="fa-solid fa-arrow-right"></i></span>
+          <span class="pager-title" id="pager-next-title">Next Article</span>
+        </a>
+      </nav>
+    </main>
+
+  </div>
+
+  <!-- SEARCH MODAL -->
+  <div class="search-modal-backdrop" id="search-modal-backdrop" role="dialog" aria-modal="true" aria-label="Search Documentation">
+    <div class="search-modal-container">
+      <div class="search-modal-header">
+        <i class="fa-solid fa-magnifying-glass text-muted"></i>
+        <input type="text" class="search-modal-input" id="search-input" placeholder="Search articles, keywords, APIs, shortcodes..." autocomplete="off">
+        <button class="icon-square-btn" id="search-close-btn" style="width: 28px; height: 28px; font-size: 0.8rem;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="search-modal-results" id="search-results-list">
+        <!-- Populated on keystroke -->
+      </div>
+      <div class="search-modal-footer">
+        <span>Navigate with <code>&uarr;</code> <code>&darr;</code> and <code>Enter</code></span>
+        <span><code>ESC</code> to exit</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-box" id="docs-toast">
+    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="docs-toast-msg">Copied to clipboard!</span>
+  </div>
+
+  <script>
+    /* ========================================================
+       DOCS_DATA: Structured Documentation Articles
+       ======================================================== */
+    const DOCS_DATA = {
+      intro: {
+        badge: "Overview & Specifications",
+        title: "Introduction to Theme Core",
+        lead: "iQPlay TMDB is a modern, high-performance streaming theme for Blogger powered by the TMDb REST API, Supabase Cloud authentication, and dynamic multi-server failover video streaming.",
+        content: `
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <img src="banner.jpg" alt="iQPlay TMDB Theme Banner" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+          </div>
+
+          <div class="callout callout-info">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>
+              <strong>Production Release v2.4.0:</strong> Engineered specifically for Blogger (Blogspot XML Engine). Requires zero expensive server hosting or database maintenance.
+            </div>
+          </div>
+
+          <h2>Key Architecture Highlights</h2>
+          <div class="step-item">
+            <div class="step-badge"><i class="fa-solid fa-bolt"></i></div>
+            <div class="step-body">
+              <h4>Realtime TMDb v3 Integration</h4>
+              <p>Direct asynchronous metadata lookup for over 900,000+ movies and TV series. Backdrops, logos, cast lists, trailers, and seasons load dynamically on the client without bloating your Blogger storage.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge"><i class="fa-solid fa-server"></i></div>
+            <div class="step-body">
+              <h4>Multi-Server Dynamic Player</h4>
+              <p>Built-in failover video architecture supporting SuperEmbed, 2Embed, VidSrc, AutoEmbed, plus custom direct MP4/m3u8 HLS streams. Visitors can switch servers instantly if a source drops.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge"><i class="fa-solid fa-users"></i></div>
+            <div class="step-body">
+              <h4>Supabase Cloud User Accounts &amp; Watchlist</h4>
+              <p>Complete authentication engine allowing visitors to sign up, sign in, save favorites, track watch history across sessions, and manage their personal library securely.</p>
+            </div>
+          </div>
+
+          <h2>Live Demo &amp; Official Links</h2>
+          <ul>
+            <li><strong>Official Store:</strong> <a href="https://ayengstore.gumroad.com/l/iqplay" target="_blank">ayengstore.gumroad.com/l/iqplay</a></li>
+            <li><strong>Interactive Live Demo:</strong> <a href="https://iqplayofficial.blogspot.com/" target="_blank">iqplayofficial.blogspot.com</a></li>
+            <li><strong>GitHub Repository:</strong> <a href="https://github.com/ayengcoding/iqplay" target="_blank">github.com/ayengcoding/iqplay</a></li>
+            <li><strong>Documentation Portal:</strong> <a href="https://ayengcoding.github.io/iqplay/" target="_blank">ayengcoding.github.io/iqplay</a></li>
+          </ul>
+        `
+      },
+
+      quickstart: {
+        badge: "Installation Guide",
+        title: "Quickstart & 4-Step Installation",
+        lead: "Deploy iQPlay TMDB to your Blogger website in under five minutes with this clean XML template restoration workflow.",
+        content: `
+          <div class="callout callout-warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div>
+              <strong>Backup First:</strong> Always make a full backup of your current Blogger theme before applying any new XML layout file.
+            </div>
+          </div>
+
+          <h2>4-Step Theme Installation</h2>
+          
+          <div class="step-item">
+            <div class="step-badge">1</div>
+            <div class="step-body">
+              <h4>Unpack Theme Package</h4>
+              <p>Locate the <code>Product - Ready to Sell/iQplay-premium.xml</code> file (or <code>iQplay.xml</code> from the Original folder) on your computer.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">2</div>
+            <div class="step-body">
+              <h4>Open Blogger Theme Editor</h4>
+              <p>Log in to your <strong>Blogger Dashboard</strong>, navigate to <strong>Theme</strong> in the left sidebar, click the dropdown next to the <strong>Customize</strong> button, and select <strong>Restore</strong>.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">3</div>
+            <div class="step-body">
+              <h4>Upload iQplay-premium.xml</h4>
+              <p>Select your <code>.xml</code> file. Alternatively, click <strong>Edit HTML</strong>, press <kbd>Ctrl+A</kbd>, <kbd>Backspace</kbd>, and paste the raw XML contents into the editor, then click <strong>Save (Disk Icon)</strong>.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">4</div>
+            <div class="step-body">
+              <h4>Configure Mobile View to Desktop</h4>
+              <p>In the Theme page dropdown, click <strong>Mobile Settings</strong>, choose <strong>Desktop</strong>, and save. This ensures Blogger renders the full responsive layout instead of Blogger's legacy mobile skin.</p>
+            </div>
+          </div>
+
+          <h2>Verification Code Check</h2>
+          <div class="code-box">
+            <div class="code-box-header">
+              <span>Blogger HTML Header Tag</span>
+              <button class="code-copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
+            <pre><code>&lt;!-- Ensure your template begins with clean viewport &amp; UTF-8 --&gt;
+&lt;meta content='width=device-width, initial-scale=1.0, viewport-fit=cover' name='viewport'/&gt;
+&lt;meta expr:charset='data:blog.encoding'/&gt;</code></pre>
+          </div>
+        `
+      },
+
+      "demo-posts": {
+        badge: "Content Ingestion",
+        title: "Import Demo Content (feed.atom)",
+        lead: "Populate your fresh streaming blog with pre-configured movie and TV series schemas using Blogger's built-in Content Import utility.",
+        content: `
+          <p>Importing demo content allows you to instantly verify slider configurations, genre carousels, and the multi-server video player before publishing your own titles.</p>
+
+          <h2>Import Instructions</h2>
+          <div class="step-item">
+            <div class="step-badge">1</div>
+            <div class="step-body">
+              <h4>Go to Blogger Settings</h4>
+              <p>Navigate to <strong>Dashboard &rarr; Settings &rarr; Manage Blog</strong>.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">2</div>
+            <div class="step-body">
+              <h4>Click Import Content</h4>
+              <p>Select <strong>Import Content</strong>. If prompted, complete the reCAPTCHA verification.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">3</div>
+            <div class="step-body">
+              <h4>Upload Atom Feed / XML Export</h4>
+              <p>Upload your exported Blogger XML content file. Blogger will import all demo posts, labels, and metadata automatically.</p>
+            </div>
+          </div>
+
+          <div class="callout callout-tip">
+            <i class="fa-solid fa-lightbulb"></i>
+            <div>
+              <strong>Label Convention:</strong> For movies, tag posts with <code>Movie</code> and genre labels (e.g. <code>Action</code>, <code>Sci-Fi</code>). For TV series, tag with <code>Series</code> and <code>TV Shows</code> so the home sliders categorize them accurately.
+            </div>
+          </div>
+        `
+      },
+
+      "essential-pages": {
+        badge: "Page Architecture",
+        title: "Essential Pages Setup",
+        lead: "Set up the mandatory Blogger standalone static pages required by the iQPlay routing and player engine.",
+        content: `
+          <p>The theme relies on dedicated static pages for player loading, details inspection, and user library management. Navigate to <strong>Blogger Dashboard &rarr; Pages &rarr; New Page</strong> and publish the following pages:</p>
+
+          <h2>Mandatory Pages Table</h2>
+          <div style="overflow-x: auto; margin: 1.25rem 0;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+              <thead>
+                <tr style="background: var(--bg-subtle); border-bottom: 2px solid var(--border); text-align: left;">
+                  <th style="padding: 0.6rem 0.8rem;">Page Title</th>
+                  <th style="padding: 0.6rem 0.8rem;">Permalink Slug</th>
+                  <th style="padding: 0.6rem 0.8rem;">Function &amp; Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 0.6rem 0.8rem; font-weight: 600;">Player</td>
+                  <td style="padding: 0.6rem 0.8rem;"><code>/p/player.html</code></td>
+                  <td style="padding: 0.6rem 0.8rem;">Hosts the multi-server video player shell, server switcher, and episodes.</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 0.6rem 0.8rem; font-weight: 600;">Details</td>
+                  <td style="padding: 0.6rem 0.8rem;"><code>/p/details.html</code></td>
+                  <td style="padding: 0.6rem 0.8rem;">Displays rich TMDb synopsis, cast cards, trailer modals, and season listings.</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 0.6rem 0.8rem; font-weight: 600;">Library</td>
+                  <td style="padding: 0.6rem 0.8rem;"><code>/p/library.html</code></td>
+                  <td style="padding: 0.6rem 0.8rem;">User watchlist, bookmark manager, and watch history dashboard.</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 0.6rem 0.8rem; font-weight: 600;">Disclaimer</td>
+                  <td style="padding: 0.6rem 0.8rem;"><code>/p/disclaimer.html</code></td>
+                  <td style="padding: 0.6rem 0.8rem;">DMCA and streaming copyright disclaimer for legal compliance.</td>
+                </tr>
+                <tr>
+                  <td style="padding: 0.6rem 0.8rem; font-weight: 600;">Privacy Policy</td>
+                  <td style="padding: 0.6rem 0.8rem;"><code>/p/privacy-policy.html</code></td>
+                  <td style="padding: 0.6rem 0.8rem;">Privacy terms and cookie consent documentation.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout callout-warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div>
+              <strong>Permalink Precision:</strong> Make sure the custom permalinks match exactly: <code>player.html</code>, <code>details.html</code>, and <code>library.html</code>.
+            </div>
+          </div>
+        `
+      },
+
+      "license-system": {
+        badge: "Security & Anti-Theft",
+        title: "License System & Anti-Theft Domain Lock",
+        lead: "Learn how the client-side license verification protects your copy and how to authorize your domain name.",
+        content: `
+          <p>iQPlay TMDB includes an embedded anti-theft domain validation module to ensure authentic buyer verification and prevent unauthorized cloning.</p>
+
+          <h2>Domain Authorization Workflow</h2>
+          <div class="step-item">
+            <div class="step-badge">1</div>
+            <div class="step-body">
+              <h4>Acquire Your License Key</h4>
+              <p>Upon purchasing the theme from Gumroad (<a href="https://ayengstore.gumroad.com/l/iqplay" target="_blank">ayengstore.gumroad.com/l/iqplay</a>), your unique license key is emailed to you.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">2</div>
+            <div class="step-body">
+              <h4>Register Your Active Domain</h4>
+              <p>Go to the official registration portal: <a href="https://abefilmofficialzone.blogspot.com/p/registration-process.html" target="_blank">Registration Process Portal</a> and submit your domain (e.g. <code>mysite.blogspot.com</code> or custom domain <code>stream.mydomain.com</code>).</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">3</div>
+            <div class="step-body">
+              <h4>Domain Migration Policy</h4>
+              <p>Each license key authorizes <strong>one active domain</strong> at a time. If moving to a new custom domain, deregister the existing domain first before registering the new one.</p>
+            </div>
+          </div>
+
+          <div class="callout callout-info">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>
+              <strong>Need Domain Reset Assistance?</strong> Send a direct message to the author on Telegram: <a href="https://t.me/ayengcoding" target="_blank">@ayengcoding</a>.
+            </div>
+          </div>
+        `
+      },
+
+      changelog: {
+        badge: "Release History",
+        title: "Development & Changelog",
+        lead: "Detailed version history and evolutionary roadmap of the iQPlay TMDB streaming architecture.",
+        content: `
+          <h2>Version 2.4.0 — Current Stable</h2>
+          <ul>
+            <li><strong>Supabase V2 Engine:</strong> Integrated Supabase JS v2 for real-time authentication, session persistence, and instant watchlist synchronization.</li>
+            <li><strong>Dual Theme Switcher:</strong> Added persistent Dark and Light mode switcher with auto-saving to <code>localStorage</code>.</li>
+            <li><strong>Failover Server 4 &amp; 5:</strong> Added automated failover triggers for external HLS/m3u8 sources.</li>
+            <li><strong>Responsive Navigation Drawer:</strong> 100% overhaul of mobile drawer and touch-swipe subnav pill bar.</li>
+          </ul>
+
+          <h2>Version 2.0.0</h2>
+          <ul>
+            <li><strong>Modular JavaScript Engine:</strong> Split core scripts into bundle architecture (homepage, details, player, library, protection).</li>
+            <li><strong>Dynamic TMDb v3 Synopses:</strong> Auto-fetching cast cards and season episode grids directly from TMDb REST API.</li>
+          </ul>
+
+          <h2>Version 1.0.0</h2>
+          <ul>
+            <li>Initial public release with responsive grid, multi-server video switcher, and basic theme layout settings.</li>
+          </ul>
+        `
+      },
+
+      "tmdb-config": {
+        badge: "API Architecture",
+        title: "TMDb API v3 Configuration",
+        lead: "Connect your free The Movie Database (TMDb) API key to unlock automated posters, backdrops, cast directories, and episode lists.",
+        content: `
+          <p>The entire dynamic UI relies on TMDb REST endpoints. Follow these steps to obtain and integrate your personal API key:</p>
+
+          <h2>Obtaining a TMDb API Key</h2>
+          <ol>
+            <li>Create an account at <a href="https://www.themoviedb.org/" target="_blank">themoviedb.org</a>.</li>
+            <li>Go to <strong>Settings &rarr; API &rarr; Request an API Key</strong> (Choose <em>Developer / Non-commercial</em>).</li>
+            <li>Copy your <strong>API Key (v3 auth)</strong> string (32 hex characters).</li>
+          </ol>
+
+          <h2>Theme Code Integration</h2>
+          <p>Search for <code>apiKey</code> in your Blogger HTML editor or configure it via the script header tag:</p>
+
+          <div class="code-box">
+            <div class="code-box-header">
+              <span>JavaScript TMDb Global Configuration</span>
+              <button class="code-copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
+            <pre><code>&lt;script&gt;
+  window.tmdbConfig = {
+    apiKey: "YOUR_32_CHAR_TMDB_API_KEY",
+    language: "en-US",
+    imgBaseUrl: "https://image.tmdb.org/t/p/",
+    posterSize: "w342",
+    backdropSize: "w1280"
+  };
+&lt;/script&gt;</code></pre>
+          </div>
+
+          <div class="callout callout-tip">
+            <i class="fa-solid fa-lightbulb"></i>
+            <div>
+              <strong>High-Speed CDN:</strong> Images from TMDb are delivered through Cloudflare's global edge network, keeping your Blogger page speed fast and lowering server latency worldwide.
+            </div>
+          </div>
+        `
+      },
+
+      "supabase-auth": {
+        badge: "User Engine",
+        title: "Supabase User Auth & Watchlist Sync",
+        lead: "Enable cloud user accounts, session storage, favorite bookmarks, and custom watchlists with Supabase Backend-as-a-Service.",
+        content: `
+          <p>iQPlay uses Supabase for database and user management without needing any server infrastructure. Users can log in from any browser and access their saved movies and TV shows instantly.</p>
+
+          <h2>Supabase Credentials Integration</h2>
+          <div class="code-box">
+            <div class="code-box-header">
+              <span>Supabase Client Initialization</span>
+              <button class="code-copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
+            <pre><code>&lt;script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const SUPABASE_URL = "https://your-project-ref.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+&lt;/script&gt;</code></pre>
+          </div>
+
+          <h2>Supported User Features</h2>
+          <ul>
+            <li><strong>Email &amp; Password Auth:</strong> Fast signup with automated session tokens.</li>
+            <li><strong>Instant Favorites:</strong> Click the bookmark heart icon on any title to save it to your Supabase <code>watchlist</code> table.</li>
+            <li><strong>Watch History:</strong> Automatically retains the user's last watched episode and timestamp.</li>
+          </ul>
+        `
+      },
+
+      "multi-server": {
+        badge: "Streaming Engine",
+        title: "Multi-Server Video Players",
+        lead: "Configure multi-source failover video servers with custom embeds, responsive iframes, and auto-fallback handling.",
+        content: `
+          <p>Ensure uninterrupted video streaming with multi-server failover architecture. If Server 1 encounters downtime, visitors can seamlessly switch to Server 2, 3, or direct HLS with a single click.</p>
+
+          <h2>Default Server Endpoints</h2>
+          <div class="code-box">
+            <div class="code-box-header">
+              <span>Server Embed Routing Matrix</span>
+              <button class="code-copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
+            <pre><code>// Dynamic Embed URL Generators
+const SERVER_PROVIDERS = {
+  server1: (id, s, e) =&gt; s ? \`https://vidsrc.to/embed/tv/\${id}/\${s}/\${e}\` : \`https://vidsrc.to/embed/movie/\${id}\`,
+  server2: (id, s, e) =&gt; s ? \`https://superembed.stream/embed/\${id}/\${s}/\${e}\` : \`https://superembed.stream/embed/\${id}\`,
+  server3: (id, s, e) =&gt; s ? \`https://autoembed.to/tv/tmdb/\${id}-\${s}-\${e}\` : \`https://autoembed.to/movie/tmdb/\${id}\`,
+  server4: (id, s, e) =&gt; s ? \`https://multiembed.mov/?video_id=\${id}&amp;s=\${s}&amp;e=\${e}\` : \`https://multiembed.mov/?video_id=\${id}\`
+};</code></pre>
+          </div>
+
+          <div class="callout callout-info">
+            <i class="fa-solid fa-shield"></i>
+            <div>
+              <strong>AdBlock / Sandbox Friendly:</strong> All player iframes feature strict <code>sandbox="allow-scripts allow-same-origin allow-forms"</code> attributes to prevent rogue popups while allowing video playback.
+            </div>
+          </div>
+        `
+      },
+
+      "counter-comments": {
+        badge: "Engagement",
+        title: "Realtime Stats & Comments",
+        lead: "Interactive post stats, view counters, user reaction hearts, and 2-tier nested discussion threads.",
+        content: `
+          <p>Boost visitor engagement with real-time views and interactive comments designed to fit the modern dark-slate aesthetic.</p>
+
+          <h2>Features</h2>
+          <ul>
+            <li><strong>Live View Counter:</strong> Tracks visitor page views and displays real-time statistics per post.</li>
+            <li><strong>Heart Reaction Button:</strong> Visitors can click the like heart to instantly increment post popularity.</li>
+            <li><strong>Nested Reply System:</strong> Clean 2-tier threaded discussion styling with author identification badges.</li>
+          </ul>
+
+          <div class="callout callout-tip">
+            <i class="fa-solid fa-lightbulb"></i>
+            <div>
+              Comments support standard Blogger native moderation or can connect directly to your custom Supabase comments table.
+            </div>
+          </div>
+        `
+      },
+
+      "shortcode-builder": {
+        badge: "Interactive Utility",
+        title: "Shortcode Generator",
+        lead: "Quickly generate shortcodes for custom homepage widgets, category grids, and carousel sliders.",
+        content: `
+          <p>Use the generator below to create shortcodes for homepage layout widgets:</p>
+
+          <div class="tool-sandbox-card">
+            <div class="tool-grid">
+              <div class="tool-field">
+                <label>Widget Label / Title</label>
+                <input type="text" id="gen-label" value="Trending Movies" oninput="generateShortcode()">
+              </div>
+              <div class="tool-field">
+                <label>Display Style</label>
+                <select id="gen-style" onchange="generateShortcode()">
+                  <option value="slider">Hero Carousel Slider</option>
+                  <option value="grid" selected>Poster Grid</option>
+                  <option value="list">Compact List</option>
+                  <option value="trending">Ranked Top 10</option>
+                </select>
+              </div>
+              <div class="tool-field">
+                <label>Item Count</label>
+                <input type="number" id="gen-count" value="12" min="1" max="24" oninput="generateShortcode()">
+              </div>
+              <div class="tool-field">
+                <label>Sort Order</label>
+                <select id="gen-sort" onchange="generateShortcode()">
+                  <option value="recent" selected>Most Recent</option>
+                  <option value="popular">Most Popular</option>
+                  <option value="rating">Highest Rated</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="code-box" style="margin-bottom: 0;">
+              <div class="code-box-header">
+                <span>Generated Blogger Widget Shortcode</span>
+                <button class="code-copy-btn" id="copy-shortcode-btn" onclick="copyGeneratedShortcode()"><i class="fa-regular fa-copy"></i> Copy</button>
+              </div>
+              <pre><code id="shortcode-output">[iqplay label="Trending Movies" style="grid" count="12" sort="recent"]</code></pre>
+            </div>
+          </div>
+
+          <div class="callout callout-info">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>
+              Paste the generated shortcode inside any <strong>HTML/JavaScript Gadget</strong> in your <strong>Blogger Layout</strong> manager.
+            </div>
+          </div>
+        `
+      },
+
+      "post-creator": {
+        badge: "Publishing Workflow",
+        title: "Post Schema Creator",
+        lead: "Generate the exact JSON/HTML schema required when publishing movie and TV series posts on Blogger.",
+        content: `
+          <p>To ensure TMDb auto-linking, copy this template into the <strong>HTML view</strong> of your Blogger post editor:</p>
+
+          <div class="code-box">
+            <div class="code-box-header">
+              <span>Blogger Post HTML Schema Template</span>
+              <button class="code-copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
+            <pre><code>&lt;!-- iQPlay Post Configuration Schema --&gt;
+&lt;div class="iqplay-data" 
+     data-tmdb-id="550" 
+     data-type="movie" 
+     data-title="Fight Club" 
+     data-year="1999" 
+     data-quality="4K UHD"&gt;
+&lt;/div&gt;
+
+&lt;!-- Optional Custom Streaming Overrides --&gt;
+&lt;div class="iqplay-sources" style="display:none;"&gt;
+  &lt;source data-server="Server 1 (Direct)" data-src="https://your-cdn.com/stream.m3u8" data-type="hls" /&gt;
+  &lt;source data-server="Server 2 (Embed)" data-src="https://vidsrc.to/embed/movie/550" /&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Optional custom post synopsis or download buttons here...&lt;/p&gt;</code></pre>
+          </div>
+
+          <h2>Key Schema Attributes</h2>
+          <ul>
+            <li><code>data-tmdb-id</code>: The TMDb ID number found in any movie/TV URL on themoviedb.org.</li>
+            <li><code>data-type</code>: Set to <code>movie</code> or <code>tv</code>.</li>
+            <li><code>data-quality</code>: Badge displayed over poster (e.g. <code>4K UHD</code>, <code>1080p</code>, <code>CAM</code>).</li>
+          </ul>
+        `
+      },
+
+      troubleshooting: {
+        badge: "Diagnostic Center",
+        title: "Troubleshooting & FAQ",
+        lead: "Solutions to common setup issues, TMDb API key questions, layout alignments, and mobile optimizations.",
+        content: `
+          <h2>Frequently Addressed Questions</h2>
+
+          <div class="step-item">
+            <div class="step-badge"><i class="fa-solid fa-question"></i></div>
+            <div class="step-body">
+              <h4>Post posters or synopsis fail to load?</h4>
+              <p>Verify that your TMDb API key is valid and has not reached rate limits. Open browser console (<kbd>F12</kbd> &rarr; Console) to verify if requests to <code>api.themoviedb.org</code> return HTTP 200.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge"><i class="fa-solid fa-question"></i></div>
+            <div class="step-body">
+              <h4>Theme redirects on domain load?</h4>
+              <p>This happens when your domain has not been registered in the anti-theft licensing engine. Visit the <a href="https://abefilmofficialzone.blogspot.com/p/registration-process.html" target="_blank">Registration Process Portal</a> or message the author on Telegram <a href="https://t.me/ayengcoding" target="_blank">@ayengcoding</a> to verify your domain.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge"><i class="fa-solid fa-question"></i></div>
+            <div class="step-body">
+              <h4>Mobile layout appears distorted or broken?</h4>
+              <p>Go to <strong>Blogger Dashboard &rarr; Theme</strong>, click the dropdown next to Customize, select <strong>Mobile Settings</strong>, and make sure <strong>Desktop</strong> is selected. This forces Blogger to render the responsive layout instead of the legacy mobile template.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge"><i class="fa-solid fa-question"></i></div>
+            <div class="step-body">
+              <h4>How do I change the brand purple accent color?</h4>
+              <p>In the CSS <code>:root</code> declaration, update <code>--brand: #9333ea;</code> to your preferred color (e.g. Coral Crimson <code>#e11d48</code> or Emerald <code>#059669</code>).</p>
+            </div>
+          </div>
+        `
+      },
+
+      community: {
+        badge: "Support Network",
+        title: "Official Community & Socials",
+        lead: "Connect with the author, join developer discussion groups, submit bug reports, or request feature updates.",
+        content: `
+          <p>Get in touch directly through our official social media and support channels:</p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+            
+            <a href="https://t.me/ayengcoding" target="_blank" rel="noopener" style="text-decoration: none; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface); display: flex; gap: 1rem; align-items: center;">
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: #24A1DE; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fa-brands fa-telegram"></i>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: var(--text);">Telegram Author</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">@ayengcoding (Direct Support)</div>
+              </div>
+            </a>
+
+            <a href="https://t.me/ayeng_coding" target="_blank" rel="noopener" style="text-decoration: none; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface); display: flex; gap: 1rem; align-items: center;">
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: #24A1DE; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fa-solid fa-bullhorn"></i>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: var(--text);">Telegram Channel</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">@ayeng_coding (Updates)</div>
+              </div>
+            </a>
+
+            <a href="https://t.me/ayengcodingofficial" target="_blank" rel="noopener" style="text-decoration: none; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface); display: flex; gap: 1rem; align-items: center;">
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: #0088cc; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fa-solid fa-comments"></i>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: var(--text);">Discussion Group</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">@ayengcodingofficial</div>
+              </div>
+            </a>
+
+            <a href="https://www.facebook.com/acohcayeng" target="_blank" rel="noopener" style="text-decoration: none; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface); display: flex; gap: 1rem; align-items: center;">
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: #1877F2; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fa-brands fa-facebook"></i>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: var(--text);">Facebook Page</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">fb.com/acohcayeng</div>
+              </div>
+            </a>
+
+            <a href="https://www.instagram.com/acoh_cariel/" target="_blank" rel="noopener" style="text-decoration: none; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface); display: flex; gap: 1rem; align-items: center;">
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: #E4405F; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fa-brands fa-instagram"></i>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: var(--text);">Instagram Profile</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">@acoh_cariel</div>
+              </div>
+            </a>
+
+            <a href="https://ayengstore.gumroad.com/l/iqplay" target="_blank" rel="noopener" style="text-decoration: none; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface); display: flex; gap: 1rem; align-items: center;">
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: #9333ea; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fa-solid fa-bag-shopping"></i>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: var(--text);">Gumroad Store</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Purchase Theme &amp; Addons</div>
+              </div>
+            </a>
+
+          </div>
+        `
+      }
+    };
+
+    /* Order sequence for Prev/Next pagination */
+    const DOC_KEYS = Object.keys(DOCS_DATA);
+    let currentDocKey = "intro";
+
+    /* ========================================================
+       RENDER ARTICLE ROUTER
+       ======================================================== */
+    function renderArticle(docKey) {
+      if (!DOCS_DATA[docKey]) docKey = "intro";
+      currentDocKey = docKey;
+      const data = DOCS_DATA[docKey];
+
+      const mount = document.getElementById('article-mount');
+      mount.innerHTML = `
+        <article class="article-header">
+          <span class="article-badge"><i class="fa-solid fa-sparkles"></i> ${data.badge}</span>
+          <h1 class="article-title">${data.title}</h1>
+          <p class="article-lead">${data.lead}</p>
+        </article>
+        <div class="article-body">
+          ${data.content}
+        </div>
+      `;
+
+      // Update active state in sidebar links
+      document.querySelectorAll('.sidebar-link').forEach(link => {
+        if (link.getAttribute('data-doc') === docKey) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+
+      // Update Pager Navigation
+      const currentIndex = DOC_KEYS.indexOf(docKey);
+      const prevBtn = document.getElementById('pager-prev-btn');
+      const nextBtn = document.getElementById('pager-next-btn');
+
+      if (currentIndex > 0) {
+        const prevKey = DOC_KEYS[currentIndex - 1];
+        prevBtn.style.visibility = 'visible';
+        document.getElementById('pager-prev-title').textContent = DOCS_DATA[prevKey].title;
+        prevBtn.onclick = () => navigateTo(prevKey);
+      } else {
+        prevBtn.style.visibility = 'hidden';
+      }
+
+      if (currentIndex < DOC_KEYS.length - 1) {
+        const nextKey = DOC_KEYS[currentIndex + 1];
+        nextBtn.style.visibility = 'visible';
+        document.getElementById('pager-next-title').textContent = DOCS_DATA[nextKey].title;
+        nextBtn.onclick = () => navigateTo(nextKey);
+      } else {
+        nextBtn.style.visibility = 'hidden';
+      }
+
+      // Close mobile drawer on navigation
+      closeSidebar();
+
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Update URL hash without jump
+      if (window.location.hash !== '#' + docKey) {
+        history.pushState(null, null, '#' + docKey);
+      }
+    }
+
+    function navigateTo(docKey) {
+      renderArticle(docKey);
+    }
+
+    /* ========================================================
+       THEME SWITCHER ENGINE (LIGHT / DARK)
+       ======================================================== */
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const themeIconSun = document.getElementById('theme-icon-sun');
+    const themeIconMoon = document.getElementById('theme-icon-moon');
+
+    function applyTheme(isDark) {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        themeIconSun.style.display = 'none';
+        themeIconMoon.style.display = 'block';
+        localStorage.setItem('iqplay_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        themeIconSun.style.display = 'block';
+        themeIconMoon.style.display = 'none';
+        localStorage.setItem('iqplay_theme', 'light');
+      }
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+      const isCurrentlyDark = document.documentElement.classList.contains('dark');
+      applyTheme(!isCurrentlyDark);
+    });
+
+    // Check system preference or saved preference
+    const savedTheme = localStorage.getItem('iqplay_theme');
+    if (savedTheme === 'light') {
+      applyTheme(false);
+    } else {
+      applyTheme(true);
+    }
+
+    /* ========================================================
+       OFF-CANVAS MOBILE DRAWER
+       ======================================================== */
+    const hamburgerBtn = document.getElementById('hamburger-toggle-btn');
+    const sidebar = document.getElementById('doc-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      backdrop.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    hamburgerBtn.addEventListener('click', () => {
+      if (sidebar.classList.contains('open')) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    });
+
+    backdrop.addEventListener('click', closeSidebar);
+
+    // Sidebar navigation clicks
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const docKey = link.getAttribute('data-doc');
+        if (docKey) navigateTo(docKey);
+      });
+    });
+
+    /* ========================================================
+       LIVE SEARCH MODAL ENGINE (CTRL+K)
+       ======================================================== */
+    const searchModal = document.getElementById('search-modal-backdrop');
+    const searchInput = document.getElementById('search-input');
+    const searchCloseBtn = document.getElementById('search-close-btn');
+    const searchResultsList = document.getElementById('search-results-list');
+    const searchTriggerDesktop = document.getElementById('search-trigger-desktop');
+    const searchTriggerMobile = document.getElementById('search-trigger-mobile');
+
+    function openSearchModal() {
+      searchModal.classList.add('open');
+      searchInput.value = '';
+      executeSearch('');
+      setTimeout(() => searchInput.focus(), 50);
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSearchModal() {
+      searchModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    searchTriggerDesktop.addEventListener('click', openSearchModal);
+    searchTriggerMobile.addEventListener('click', openSearchModal);
+    searchCloseBtn.addEventListener('click', closeSearchModal);
+
+    searchModal.addEventListener('click', (e) => {
+      if (e.target === searchModal) closeSearchModal();
+    });
+
+    // Keyboard shortcut Ctrl+K & Escape
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (searchModal.classList.contains('open')) {
+          closeSearchModal();
+        } else {
+          openSearchModal();
+        }
+      }
+      if (e.key === 'Escape' && searchModal.classList.contains('open')) {
+        closeSearchModal();
+      }
+    });
+
+    function executeSearch(query) {
+      query = query.trim().toLowerCase();
+      let matches = [];
+
+      DOC_KEYS.forEach(key => {
+        const item = DOCS_DATA[key];
+        const plainContent = item.content.replace(/<[^>]*>?/gm, ' ').toLowerCase();
+        let score = 0;
+
+        if (item.title.toLowerCase().includes(query)) score += 10;
+        if (item.badge.toLowerCase().includes(query)) score += 5;
+        if (item.lead.toLowerCase().includes(query)) score += 3;
+        if (plainContent.includes(query)) score += 1;
+
+        if (!query || score > 0) {
+          matches.push({ key, item, score });
+        }
+      });
+
+      if (query) {
+        matches.sort((a, b) => b.score - a.score);
+      }
+
+      if (matches.length === 0) {
+        searchResultsList.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+            <i class="fa-solid fa-ghost" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; opacity: 0.5;"></i>
+            No documentation matching "<strong>${query}</strong>"
+          </div>
+        `;
+        return;
+      }
+
+      searchResultsList.innerHTML = matches.map((m, idx) => `
+        <div class="search-result-item ${idx === 0 ? 'selected' : ''}" data-doc="${m.key}">
+          <span class="search-result-badge">${m.item.badge}</span>
+          <div class="search-result-title">${m.item.title}</div>
+          <div class="search-result-lead">${m.item.lead}</div>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.search-result-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const docKey = item.getAttribute('data-doc');
+          closeSearchModal();
+          navigateTo(docKey);
+        });
+      });
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      executeSearch(e.target.value);
+    });
+
+    /* ========================================================
+       CODE COPY & TOAST NOTIFICATION
+       ======================================================== */
+    function showToast(message) {
+      const toast = document.getElementById('docs-toast');
+      const toastMsg = document.getElementById('docs-toast-msg');
+      toastMsg.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+
+    function copyCode(btn) {
+      const codeElement = btn.closest('.code-box').querySelector('pre code');
+      if (codeElement) {
+        navigator.clipboard.writeText(codeElement.textContent).then(() => {
+          const originalText = btn.innerHTML;
+          btn.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> Copied!';
+          showToast('Code snippet copied to clipboard!');
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+          }, 2000);
+        });
+      }
+    }
+
+    function generateShortcode() {
+      const label = document.getElementById('gen-label').value.trim() || 'Trending Content';
+      const style = document.getElementById('gen-style').value;
+      const count = document.getElementById('gen-count').value || 12;
+      const sort = document.getElementById('gen-sort').value;
+      const code = `[iqplay label="${label}" style="${style}" count="${count}" sort="${sort}"]`;
+      const output = document.getElementById('shortcode-output');
+      if (output) output.textContent = code;
+    }
+
+    function copyGeneratedShortcode() {
+      const output = document.getElementById('shortcode-output');
+      const btn = document.getElementById('copy-shortcode-btn');
+      if (output) {
+        navigator.clipboard.writeText(output.textContent).then(() => {
+          const originalText = btn.innerHTML;
+          btn.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> Copied!';
+          showToast('Shortcode copied to clipboard!');
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+          }, 2000);
+        });
+      }
+    }
+
+    /* ========================================================
+       INITIALIZATION ROUTER
+       ======================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && DOCS_DATA[hash]) {
+        renderArticle(hash);
+      } else {
+        renderArticle('intro');
+      }
+    });
+
+    window.addEventListener('popstate', () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && DOCS_DATA[hash]) {
+        renderArticle(hash);
+      }
+    });
+  </script>
+</body>
+</html>
+"""
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_template)
+
+os.makedirs("docs", exist_ok=True)
+with open("docs/index.html", "w", encoding="utf-8") as f:
+    f.write(html_template)
+
+print("Generated index.html and docs/index.html successfully!")
+

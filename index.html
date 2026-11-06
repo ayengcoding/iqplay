@@ -2,10 +2,13 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>iQPlay TMDB — Documentation & Layout Guide</title>
-  <meta name="description" content="Official documentation, shortcode engine, widget setup, and post creator guide for iQPlay TMDB Blogger Streaming Theme by Ayeng Coding.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>iQPlay TMDB — Modern Blogger Streaming Theme Documentation</title>
+  <meta name="description" content="Official documentation, TMDb API v3 setup, Supabase user system, multi-server video player, and layout engine for iQPlay TMDB Blogger streaming theme.">
   
+  <!-- Favicon / Brand Icon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>">
+
   <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,987 +17,2194 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            themeBg: '#151821',
-            themeSidebar: '#11141c',
-            themeCard: '#1c202c',
-            themeBorder: '#2a3142',
-            themeText: '#f1f5f9',
-            accent: '#9333ea',
-            accentHover: '#a855f7'
-          },
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            mono: ['"JetBrains Mono"', 'monospace']
-          }
-        }
-      }
-    }
-  </script>
-
   <style>
+    /* ========================================================
+       CSS DESIGN TOKENS & DUAL THEME ENGINE
+       ======================================================== */
     :root {
-      --bg-main: #151821;
-      --bg-sidebar: #11141c;
-      --bg-card: #1c202c;
-      --border-color: #2a3142;
-      --text-main: #f1f5f9;
-      --accent: #9333ea;
-      --accent-hover: #a855f7;
-      --accent-glow: rgba(147, 51, 234, 0.35);
-      --thumb: #333c4d;
-      --track: #151821;
+      /* Brand Color Accent */
+      --brand: #9333ea;
+      --brand-hover: #a855f7;
+      --brand-light: #f3e8ff;
+      --brand-border: rgba(147, 51, 234, 0.35);
+      --brand-glow: rgba(147, 51, 234, 0.22);
+      
+      /* Light Mode Palette */
+      --bg-page: #ffffff;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f8fafc;
+      --bg-sidebar: #f8fafc;
+      --border: #e5e7eb;
+      --border-subtle: #f1f5f9;
+      --text: #111827;
+      --text-muted: #64748b;
+      --text-subtle: #94a3b8;
+      
+      /* Code Blocks */
+      --code-bg: #0f172a;
+      --code-header: #1e293b;
+      --code-text: #e2e8f0;
+      
+      /* Sizing Metrics */
+      --nav-height-tier1: 56px;
+      --nav-height-tier2: 44px;
+      --header-total: 100px;
+      --sidebar-width: 288px;
     }
 
-    /* 2. Custom Dark Scrollbars (Never show white scrollbars) */
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: var(--thumb) var(--track);
+    html.dark {
+      /* Dark Brand Accent */
+      --brand: #a855f7;
+      --brand-hover: #c084fc;
+      --brand-light: rgba(147, 51, 234, 0.18);
+      --brand-border: rgba(168, 85, 247, 0.35);
+      --brand-glow: rgba(168, 85, 247, 0.25);
+      
+      /* Deep Rich Slate Mode */
+      --bg-page: #0b0f17;
+      --bg-surface: #111827;
+      --bg-subtle: #1e293b;
+      --bg-sidebar: #0e131f;
+      --border: #1f2937;
+      --border-subtle: #1a2234;
+      --text: #f9fafb;
+      --text-muted: #94a3b8;
+      --text-subtle: #64748b;
+      
+      /* Code Blocks */
+      --code-bg: #080c14;
+      --code-header: #111827;
+      --code-text: #f1f5f9;
     }
-    ::-webkit-scrollbar {
-      width: 7px;
-      height: 7px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--track);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--thumb);
-      border-radius: 9999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #475569;
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      margin: 0;
-      padding: 0;
+      background-color: var(--bg-page);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    /* Code & Typography */
-    code, pre, .font-mono {
-      font-family: 'JetBrains Mono', monospace;
+    /* Ambient background gradient glow */
+    body::before {
+      content: "";
+      position: fixed;
+      top: -150px;
+      right: 12%;
+      width: 550px;
+      height: 450px;
+      background: radial-gradient(circle, var(--brand-glow) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(60px);
     }
 
-    /* 4. Sticky Header Tabs (Direct Body Child) */
-    .header-tabs {
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-page);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    /* ========================================================
+       STICKY 2-TIER HEADER (MOBILE OPTIMIZED)
+       ======================================================== */
+    .header-wrapper {
       position: sticky;
       top: 0;
-      z-index: 999;
-      background: rgba(17, 20, 28, 0.95);
+      z-index: 50;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-color);
     }
 
-    .tab-link {
-      white-space: nowrap;
-      transition: all 0.25s ease;
-      color: #94a3b8;
-      border-bottom: 2px solid transparent;
-      padding: 0.85rem 1.1rem;
-      font-size: 0.875rem;
+    /* Tier 1: Main Header */
+    .header-tier1 {
+      height: var(--nav-height-tier1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .brand-logo-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--brand), #ec4899);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 15px;
+      box-shadow: 0 4px 12px var(--brand-glow);
+    }
+
+    .brand-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .brand-title .platform-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: 6px;
+      background: rgba(255, 87, 34, 0.15);
+      color: #ff5722;
+      border: 1px solid rgba(255, 87, 34, 0.25);
+    }
+
+    /* Version dropdown pill */
+    .version-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .version-pill {
+      font-size: 0.75rem;
       font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s ease;
+    }
+
+    .version-pill:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+
+    /* Center search input trigger */
+    .search-trigger-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.45rem 0.85rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 260px;
+      max-width: 380px;
+    }
+
+    .search-trigger-btn:hover {
+      border-color: var(--brand);
+      color: var(--text);
+      background: var(--bg-surface);
+      box-shadow: 0 0 0 3px var(--brand-glow);
+    }
+
+    .search-trigger-btn .kbd-shortcut {
+      margin-left: auto;
+      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0.15rem 0.4rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text-subtle);
+    }
+
+    /* Actions right */
+    .tier1-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .btn-action-pill {
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
-    }
-    .tab-link:hover {
-      color: #f1f5f9;
-    }
-    .tab-link.active {
-      color: #fff;
-      border-bottom-color: var(--accent);
-      background: linear-gradient(180deg, rgba(147, 51, 234, 0.05) 0%, rgba(147, 51, 234, 0.18) 100%);
-      box-shadow: inset 0 -2px 0 var(--accent), 0 4px 15px var(--accent-glow);
+      gap: 0.45rem;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      color: var(--text);
     }
 
-    /* Desktop Banner Max-Width (3) */
-    .hero-banner-img {
-      max-width: 680px;
-      margin: 0 auto;
-      border-radius: 14px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(147, 51, 234, 0.2);
-      border: 1px solid var(--border-color);
-      transition: transform 0.3s ease;
+    .btn-action-pill:hover {
+      border-color: var(--brand);
+      color: var(--brand);
     }
-    .hero-banner-img:hover {
+
+    .icon-square-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.15s ease;
+    }
+
+    .icon-square-btn:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+      background: var(--bg-surface);
+    }
+
+    .hamburger-btn {
+      display: none;
+    }
+
+    /* Tier 2: Sub-Navigation Horizontal Tabs */
+    .header-tier2 {
+      height: var(--nav-height-tier2);
+      display: flex;
+      align-items: center;
+      padding: 0 1.25rem;
+      max-width: 1440px;
+      margin: 0 auto;
+      width: 100%;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .header-tier2::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tier2-tabs {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .tier2-tab-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: 7px;
+      text-decoration: none;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+    }
+
+    .tier2-tab-link:hover {
+      color: var(--text);
+      background: var(--bg-subtle);
+    }
+
+    .tier2-tab-link.active {
+      color: var(--brand);
+      background: var(--brand-light);
+      border-color: var(--brand-border);
+    }
+
+    .tier2-tab-link.special-buy {
+      color: #10b981;
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .tier2-tab-link.special-buy:hover {
+      background: rgba(16, 185, 129, 0.22);
+    }
+
+    /* ========================================================
+       PAGE CONTAINER & SIDEBAR LAYOUT
+       ======================================================== */
+    .page-wrapper {
+      flex: 1;
+      display: grid;
+      grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* Left Sidebar */
+    .sidebar {
+      position: sticky;
+      top: var(--header-total);
+      height: calc(100vh - var(--header-total));
+      overflow-y: auto;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      padding: 1.25rem 0.85rem 2.5rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      z-index: 30;
+    }
+
+    .sidebar-group-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-subtle);
+      margin-bottom: 0.5rem;
+      padding-left: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .sidebar-nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.45rem 0.65rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .sidebar-link i {
+      font-size: 0.85rem;
+      width: 16px;
+      text-align: center;
+      opacity: 0.8;
+    }
+
+    .sidebar-link:hover {
+      color: var(--text);
+      background: var(--bg-subtle);
+    }
+
+    .sidebar-link.active {
+      color: var(--brand);
+      background: var(--brand-light);
+      font-weight: 600;
+    }
+
+    .sidebar-link.active::before {
+      content: "";
+      position: absolute;
+      left: -0.25rem;
+      top: 20%;
+      height: 60%;
+      width: 3px;
+      background: var(--brand);
+      border-radius: 2px;
+    }
+
+    /* Sidebar Footer / Connect Box */
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .sidebar-footer-title {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-subtle);
+      margin-bottom: 0.6rem;
+      padding-left: 0.25rem;
+    }
+
+    .social-quick-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.35rem;
+    }
+
+    .social-quick-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 34px;
+      border-radius: 7px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: all 0.15s ease;
+    }
+
+    .social-quick-link:hover {
+      color: var(--brand);
+      border-color: var(--brand);
       transform: translateY(-2px);
     }
 
-    /* Glow highlights */
-    .glow-accent {
-      box-shadow: 0 0 20px var(--accent-glow);
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 95;
+      opacity: 0;
+      transition: opacity 0.25s ease;
     }
 
-    /* Smooth anchor scrolling */
-    html {
-      scroll-behavior: smooth;
-      scroll-padding-top: 80px;
+    .sidebar-backdrop.active {
+      display: block;
+      opacity: 1;
+    }
+
+    /* ========================================================
+       MAIN ARTICLE CONTENT AREA
+       ======================================================== */
+    .doc-content-area {
+      padding: 2.25rem 2.5rem 5rem 2.5rem;
+      max-width: 920px;
+      width: 100%;
+    }
+
+    /* Article Header */
+    .article-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .article-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.65rem;
+      border-radius: 9999px;
+      background: var(--brand-light);
+      color: var(--brand);
+      border: 1px solid var(--brand-border);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.75rem;
+    }
+
+    .article-title {
+      font-size: 2.1rem;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.6rem;
+    }
+
+    .article-lead {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Subheadings & Content Typography */
+    .doc-content-area h2 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 2.25rem 0 1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text);
+    }
+
+    .doc-content-area h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 1.5rem 0 0.75rem 0;
+      color: var(--text);
+    }
+
+    .doc-content-area p {
+      margin-bottom: 1.15rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .doc-content-area strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .doc-content-area a {
+      color: var(--brand);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .doc-content-area a:hover {
+      color: var(--brand-hover);
+    }
+
+    .doc-content-area ul, .doc-content-area ol {
+      margin-bottom: 1.25rem;
+      padding-left: 1.4rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .doc-content-area li {
+      margin-bottom: 0.45rem;
+    }
+
+    /* Step items */
+    .step-item {
+      display: flex;
+      gap: 1rem;
+      margin: 1.25rem 0;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.15rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .step-item:hover {
+      border-color: var(--brand);
+    }
+
+    .step-badge {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 10px var(--brand-glow);
+    }
+
+    .step-body h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      color: var(--text);
+    }
+
+    .step-body p {
+      font-size: 0.88rem;
+      margin-bottom: 0;
+      color: var(--text-muted);
+    }
+
+    /* Callout Cards */
+    .callout {
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin: 1.25rem 0;
+      font-size: 0.9rem;
+      display: flex;
+      gap: 0.85rem;
+      align-items: flex-start;
+      border-left: 4px solid;
+    }
+
+    .callout i {
+      font-size: 1.1rem;
+      margin-top: 0.15rem;
+      flex-shrink: 0;
+    }
+
+    .callout-info {
+      background: rgba(59, 130, 246, 0.08);
+      border-left-color: #3b82f6;
+      color: var(--text);
+    }
+    .callout-info i { color: #3b82f6; }
+
+    .callout-tip {
+      background: rgba(16, 185, 129, 0.08);
+      border-left-color: #10b981;
+      color: var(--text);
+    }
+    .callout-tip i { color: #10b981; }
+
+    .callout-warning {
+      background: rgba(245, 158, 11, 0.08);
+      border-left-color: #f59e0b;
+      color: var(--text);
+    }
+    .callout-warning i { color: #f59e0b; }
+
+    /* Code Blocks */
+    .code-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin: 1.25rem 0;
+      overflow: hidden;
+    }
+
+    .code-box-header {
+      background: var(--code-header);
+      padding: 0.45rem 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .code-copy-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 5px;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.72rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .code-copy-btn:hover {
+      background: var(--brand);
+      color: #ffffff;
+      border-color: var(--brand);
+    }
+
+    .code-box pre {
+      padding: 1rem;
+      overflow-x: auto;
+      margin: 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--code-text);
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85em;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      color: var(--brand);
+    }
+
+    .code-box code {
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* Interactive Live Builder inside docs */
+    .tool-sandbox-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.35rem;
+      margin: 1.5rem 0;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .tool-field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .tool-field input, .tool-field select {
+      width: 100%;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.88rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s ease;
+      font-family: inherit;
+    }
+
+    .tool-field input:focus, .tool-field select:focus {
+      border-color: var(--brand);
+    }
+
+    /* Pager Navigation */
+    .bottom-pager-nav {
+      margin-top: 3.5rem;
+      padding-top: 1.75rem;
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .pager-card {
+      padding: 1rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg-surface);
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .pager-card:hover {
+      border-color: var(--brand);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px var(--brand-glow);
+    }
+
+    .pager-card.pager-next {
+      text-align: right;
+    }
+
+    .pager-direction {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .pager-card.pager-next .pager-direction {
+      justify-content: flex-end;
+    }
+
+    .pager-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Search Modal */
+    .search-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 100;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 70px 16px 20px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .search-modal-backdrop.open {
+      display: flex;
+      opacity: 1;
+    }
+
+    .search-modal-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+      overflow: hidden;
+      animation: modalSlide 0.2s ease forwards;
+    }
+
+    @keyframes modalSlide {
+      from { transform: translateY(-15px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .search-modal-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.9rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-modal-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    .search-modal-results {
+      max-height: 380px;
+      overflow-y: auto;
+      padding: 0.6rem;
+    }
+
+    .search-result-item {
+      padding: 0.75rem 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: block;
+      text-decoration: none;
+      transition: background 0.15s ease;
+    }
+
+    .search-result-item:hover, .search-result-item.selected {
+      background: var(--bg-subtle);
+    }
+
+    .search-result-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      background: var(--brand-light);
+      color: var(--brand);
+      margin-bottom: 0.25rem;
+      display: inline-block;
+    }
+
+    .search-result-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.15rem;
+    }
+
+    .search-result-lead {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .search-modal-footer {
+      padding: 0.6rem 1.1rem;
+      border-top: 1px solid var(--border);
+      background: var(--bg-subtle);
+      font-size: 0.75rem;
+      color: var(--text-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Toast Notification */
+    .toast-box {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0f172a;
+      color: #ffffff;
+      border: 1px solid #334155;
+      padding: 0.65rem 1.1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+      z-index: 120;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: all 0.25s ease;
+    }
+
+    .toast-box.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    /* ========================================================
+       RESPONSIVE BREAKPOINTS (Mobile <= 960px)
+       ======================================================== */
+    @media (max-width: 960px) {
+      .page-wrapper {
+        grid-template-columns: 1fr;
+      }
+
+      .doc-content-area {
+        padding: 1.5rem 1.1rem 4rem 1.1rem;
+      }
+
+      .hamburger-btn {
+        display: flex;
+      }
+
+      /* Hide desktop elements on Tier 1 */
+      .desktop-only {
+        display: none !important;
+      }
+
+      .search-trigger-btn {
+        display: none !important;
+      }
+
+      /* Mobile drawer */
+      .sidebar {
+        position: fixed;
+        inset-block: 0;
+        left: 0;
+        width: 300px;
+        max-width: 85vw;
+        height: 100vh;
+        z-index: 100;
+        transform: translateX(-100%);
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.25);
+        padding-top: 1.5rem;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      /* Full width bottom pager */
+      .bottom-pager-nav {
+        grid-template-columns: 1fr !important;
+        gap: 12px;
+      }
+
+      .pager-card {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
+
+      .pager-card.pager-next {
+        text-align: left;
+      }
+
+      .pager-card.pager-next .pager-direction {
+        justify-content: flex-start;
+      }
+
+      .article-title {
+        font-size: 1.65rem;
+      }
+
+      .search-modal-backdrop {
+        padding: 50px 16px 20px;
+      }
     }
   </style>
 </head>
-<body class="bg-themeBg text-themeText min-h-screen flex flex-col">
+<body>
 
-  <!-- 4. HEADER (Line 1) -->
-  <header class="w-full bg-[#11141c] px-4 lg:px-8 py-3.5 border-b border-themeBorder flex items-center justify-between z-50">
-    <!-- Logo & Title -->
-    <a href="#" class="flex items-center gap-3 group">
-      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 via-pink-500 to-rose-500 flex items-center justify-center shadow-lg shadow-purple-600/30 group-hover:scale-105 transition-transform">
-        <i class="fa-solid fa-play text-white text-sm ml-0.5"></i>
-      </div>
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="text-xl font-extrabold tracking-tight text-white font-sans">iQplay</span>
-          <span class="text-[10px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded-full">Blogger TMDB</span>
+  <!-- STICKY 2-TIER HEADER -->
+  <header class="header-wrapper" id="top-header">
+    <!-- Tier 1: Main Header Bar -->
+    <div class="header-tier1">
+      <!-- Mobile Hamburger Button -->
+      <button class="icon-square-btn hamburger-btn" id="hamburger-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <!-- Brand Logo + Theme Name -->
+      <a href="#intro" class="brand-section">
+        <div class="brand-logo-badge"><i class="fa-solid fa-play"></i></div>
+        <div class="brand-title">
+          <span>iQPlay</span>
+          <span class="platform-tag">Blogger XML</span>
         </div>
-        <p class="text-[11px] text-slate-400 font-medium hidden sm:block">Docs & Web Setup Studio by Ayeng Coding</p>
-      </div>
-    </a>
-
-    <!-- Right Controls: Social SVG Icons + Red Live Demo Button -->
-    <div class="flex items-center gap-2 sm:gap-3">
-      <!-- Telegram -->
-      <a href="https://t.me/ayengcoding" target="_blank" rel="noopener" title="Telegram @ayengcoding" class="w-9 h-9 rounded-lg bg-[#1c202c] hover:bg-[#2a3142] border border-themeBorder flex items-center justify-center text-slate-300 hover:text-sky-400 transition-colors">
-        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
       </a>
 
-      <!-- Telegram Group -->
-      <a href="https://t.me/ayengcodingofficial" target="_blank" rel="noopener" title="Telegram Official Community" class="w-9 h-9 rounded-lg bg-[#1c202c] hover:bg-[#2a3142] border border-themeBorder flex items-center justify-center text-slate-300 hover:text-sky-400 transition-colors hidden xs:flex">
-        <i class="fa-solid fa-users text-sm"></i>
-      </a>
-
-      <!-- Facebook -->
-      <a href="https://www.facebook.com/acohcayeng" target="_blank" rel="noopener" title="Facebook Profile" class="w-9 h-9 rounded-lg bg-[#1c202c] hover:bg-[#2a3142] border border-themeBorder flex items-center justify-center text-slate-300 hover:text-blue-500 transition-colors">
-        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-      </a>
-
-      <!-- Instagram -->
-      <a href="https://www.instagram.com/acoh_cariel/" target="_blank" rel="noopener" title="Instagram" class="w-9 h-9 rounded-lg bg-[#1c202c] hover:bg-[#2a3142] border border-themeBorder flex items-center justify-center text-slate-300 hover:text-pink-500 transition-colors hidden sm:flex">
-        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-      </a>
-
-      <!-- GitHub -->
-      <a href="https://github.com/ayengcoding" target="_blank" rel="noopener" title="GitHub Profile" class="w-9 h-9 rounded-lg bg-[#1c202c] hover:bg-[#2a3142] border border-themeBorder flex items-center justify-center text-slate-300 hover:text-white transition-colors">
-        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-      </a>
-
-      <!-- Red Live Demo Button (Desktop Only) -->
-      <a href="https://iqplayofficial.blogspot.com/" target="_blank" rel="noopener" class="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-xs transition-all shadow-md shadow-red-600/30 hover:shadow-red-600/50 hover:-translate-y-0.5">
-        <span>Live Demo</span>
-        <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-      </a>
-
-      <!-- Store Gumroad Link -->
-      <a href="https://ayengstore.gumroad.com/l/iqplay" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs transition-all shadow-md shadow-purple-600/30 hover:shadow-purple-600/50">
-        <i class="fa-solid fa-crown text-[10px] text-amber-300"></i>
-        <span class="hidden xs:inline">Get License</span>
-      </a>
-    </div>
-  </header>
-
-  <!-- 4. STICKY HEADER TABS (Direct body child: position: sticky; top: 0; z-index: 999; auto-centering scrollspy) -->
-  <nav class="header-tabs overflow-x-auto" id="sticky-header-tabs" aria-label="Documentation Navigation">
-    <div class="flex items-center px-4 max-w-7xl mx-auto space-x-1" id="nav-tabs-container">
-      <a href="#overview" class="tab-link active" data-target="overview">
-        <i class="fa-solid fa-compass text-xs"></i> Overview
-      </a>
-      <a href="#how-to-use" class="tab-link" data-target="how-to-use">
-        <i class="fa-solid fa-cloud-arrow-up text-xs"></i> 1. Setup & Upload
-      </a>
-      <a href="#layout-guide" class="tab-link" data-target="layout-guide">
-        <i class="fa-solid fa-cubes text-xs"></i> 2. Layout & Widgets
-      </a>
-      <a href="#shortcode-engine" class="tab-link" data-target="shortcode-engine">
-        <i class="fa-solid fa-code text-xs"></i> 3. Shortcodes
-      </a>
-      <a href="#creating-post" class="tab-link" data-target="creating-post">
-        <i class="fa-solid fa-file-circle-plus text-xs"></i> 4. Post Format
-      </a>
-      <a href="#user-system" class="tab-link" data-target="user-system">
-        <i class="fa-solid fa-user-astronaut text-xs"></i> 5. User & Avatars
-      </a>
-      <a href="#community" class="tab-link" data-target="community">
-        <i class="fa-solid fa-heart text-xs"></i> 6. Community
-      </a>
-    </div>
-  </nav>
-
-  <!-- MAIN DOCUMENTATION CONTAINER -->
-  <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-8 space-y-12">
-
-    <!-- 3. DESKTOP BANNER (max-width: 680px) & HERO -->
-    <section id="overview" class="text-center pt-2">
-      <!-- Centered Thumbnail Banner -->
-      <div class="mb-8 flex justify-center">
-        <img src="banner.jpg" alt="iQPlay TMDB Premium Blogger Theme Banner" class="hero-banner-img w-full">
-      </div>
-
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold mb-4">
-        <span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
-        v1.0 Official Production Release
-      </div>
-      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight mb-4 font-sans">
-        iQPlay TMDB <span class="bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400 bg-clip-text text-transparent">Blogger Theme</span>
-      </h1>
-      <p class="text-slate-400 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed mb-6">
-        Next-generation high performance movie, drama, and anime streaming theme for Blogger. Powered by TMDb v3 API, dynamic season/episode switcher, multi-server video player failover, Supabase user system, and modular layout rails.
-      </p>
-
-      <!-- Quick Feature Pill Grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto text-left mb-8">
-        <div class="p-3.5 rounded-xl bg-themeCard border border-themeBorder flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center shrink-0">
-            <i class="fa-solid fa-bolt"></i>
-          </div>
-          <div>
-            <div class="text-xs font-bold text-white">Ultra Fast</div>
-            <div class="text-[11px] text-slate-400">Pure vanilla engine</div>
-          </div>
-        </div>
-        <div class="p-3.5 rounded-xl bg-themeCard border border-themeBorder flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-pink-500/10 text-pink-400 flex items-center justify-center shrink-0">
-            <i class="fa-solid fa-film"></i>
-          </div>
-          <div>
-            <div class="text-xs font-bold text-white">TMDb Powered</div>
-            <div class="text-[11px] text-slate-400">Zero database upkeep</div>
-          </div>
-        </div>
-        <div class="p-3.5 rounded-xl bg-themeCard border border-themeBorder flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
-            <i class="fa-solid fa-server"></i>
-          </div>
-          <div>
-            <div class="text-xs font-bold text-white">Multi-Server</div>
-            <div class="text-[11px] text-slate-400">Auto-switch streaming</div>
-          </div>
-        </div>
-        <div class="p-3.5 rounded-xl bg-themeCard border border-themeBorder flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
-            <i class="fa-solid fa-mobile-screen"></i>
-          </div>
-          <div>
-            <div class="text-xs font-bold text-white">100% Responsive</div>
-            <div class="text-[11px] text-slate-400">Native mobile drawer</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 1: HOW TO USE & UPLOAD THEME -->
-    <section id="how-to-use" class="scroll-mt-24 space-y-6">
-      <div class="flex items-center gap-3 border-b border-themeBorder pb-3">
-        <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-sm">1</div>
-        <div>
-          <h2 class="text-xl font-bold text-white">How to Use & Upload Theme</h2>
-          <p class="text-xs text-slate-400">Installation, XML replacement, domain license verification, and mandatory static pages</p>
+      <!-- Desktop Version Pill Dropdown -->
+      <div class="version-dropdown desktop-only">
+        <div class="version-pill" title="Current Stable Version">
+          <i class="fa-solid fa-code-branch text-xs"></i>
+          <span>v2.4.0</span>
+          <i class="fa-solid fa-chevron-down text-[10px]"></i>
         </div>
       </div>
 
-      <!-- Steps Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Step 1: Upload XML -->
-        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
-          <div class="flex items-center gap-2 text-sm font-bold text-white">
-            <span class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 inline-flex items-center justify-center text-xs">A</span>
-            Upload XML Template
-          </div>
-          <ol class="text-xs text-slate-300 space-y-2 list-decimal list-inside leading-relaxed">
-            <li>Log into your <b>Blogger Dashboard</b> (<a href="https://blogger.com" target="_blank" class="text-purple-400 hover:underline">blogger.com</a>).</li>
-            <li>In the left sidebar, click <b>Theme</b>.</li>
-            <li>Click the dropdown arrow next to <b>Customize</b> &gt; select <b>Edit HTML</b> (or <b>Restore</b> &gt; upload <code class="text-purple-300">iQplay-premium.xml</code>).</li>
-            <li>If using <b>Edit HTML</b>: Press <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300">Ctrl + A</kbd> to select all code, delete it, and paste the entire XML content from the file.</li>
-            <li>Click the orange <b>Save</b> icon in the top right corner.</li>
-          </ol>
-        </div>
+      <!-- Center Live Search Input Trigger (Desktop) -->
+      <button class="search-trigger-btn desktop-only" id="search-trigger-desktop" aria-label="Search Documentation">
+        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+        <span>Search documentation...</span>
+        <span class="kbd-shortcut">Ctrl K</span>
+      </button>
 
-        <!-- Step 2: License Registration -->
-        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
-          <div class="flex items-center gap-2 text-sm font-bold text-white">
-            <span class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 inline-flex items-center justify-center text-xs">B</span>
-            Domain License Registration
-          </div>
-          <p class="text-xs text-slate-300 leading-relaxed">
-            iQPlay features an automated domain security module. Before previewing, ensure your domain is licensed:
-          </p>
-          <div class="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs space-y-1">
-            <div class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> Single Domain Policy:</div>
-            <p class="text-[11px] text-amber-200/80">Only 1 domain can be registered per license key. To switch domains, unbind your existing site first.</p>
-          </div>
-          <div class="flex flex-wrap gap-2 pt-1">
-            <a href="https://abefilmofficialzone.blogspot.com/p/registration-process.html" target="_blank" class="text-xs px-3 py-1.5 rounded-lg bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/30 inline-flex items-center gap-1.5 transition-colors">
-              <i class="fa-solid fa-id-card"></i> Register Domain License
-            </a>
-            <a href="https://abefilmofficialzone.blogspot.com/2025/08/iqplay_25.html" target="_blank" class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-themeBorder inline-flex items-center gap-1.5 transition-colors">
-              <i class="fa-solid fa-gift"></i> Request Trial Key
-            </a>
-          </div>
-        </div>
-      </div>
+      <!-- Actions Right (Theme Toggle, Live Demo, GitHub) -->
+      <div class="tier1-actions">
+        <!-- Live Demo (Desktop) -->
+        <a href="https://iqplayofficial.blogspot.com/" target="_blank" rel="noopener" class="btn-action-pill desktop-only">
+          <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+          <span>Live Demo</span>
+        </a>
 
-      <!-- Step 3: Required Static Blank Pages -->
-      <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-4">
-        <div class="flex items-center gap-2 text-sm font-bold text-white">
-          <span class="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 inline-flex items-center justify-center text-xs">C</span>
-          Create Required Static Blank Pages
-        </div>
-        <p class="text-xs text-slate-300 leading-relaxed">
-          The theme routes user actions, video playback, and watchlist bookmarks via dedicated Blogger pages. Go to <b>Blogger Dashboard &gt; Pages &gt; New Page</b> and publish the following pages with blank HTML:
-        </p>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border border-themeBorder rounded-lg overflow-hidden">
-            <thead class="bg-[#11141c] text-slate-300 font-semibold border-b border-themeBorder">
-              <tr>
-                <th class="p-3">Page Title</th>
-                <th class="p-3">Generated URL Slug</th>
-                <th class="p-3">Functionality</th>
-                <th class="p-3">Page Content</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-themeBorder text-slate-300">
-              <tr class="hover:bg-slate-800/20">
-                <td class="p-3 font-semibold text-white">Details</td>
-                <td class="p-3 font-mono text-purple-300">/p/details.html</td>
-                <td class="p-3">Movie & series overview, cast, season list, ratings, backdrop</td>
-                <td class="p-3"><span class="px-2 py-0.5 rounded bg-slate-800 text-[11px] text-slate-400">Leave Blank</span></td>
-              </tr>
-              <tr class="hover:bg-slate-800/20">
-                <td class="p-3 font-semibold text-white">Player</td>
-                <td class="p-3 font-mono text-purple-300">/p/player.html</td>
-                <td class="p-3">Multi-server video player, episode drawer, downloads, sandbox toggle</td>
-                <td class="p-3"><span class="px-2 py-0.5 rounded bg-slate-800 text-[11px] text-slate-400">Leave Blank</span></td>
-              </tr>
-              <tr class="hover:bg-slate-800/20">
-                <td class="p-3 font-semibold text-white">Library</td>
-                <td class="p-3 font-mono text-purple-300">/p/library.html</td>
-                <td class="p-3">Personal saved watchlist, browsing history, and bookmark manager</td>
-                <td class="p-3"><span class="px-2 py-0.5 rounded bg-slate-800 text-[11px] text-slate-400">Leave Blank</span></td>
-              </tr>
-              <tr class="hover:bg-slate-800/20">
-                <td class="p-3 font-semibold text-white">About Us</td>
-                <td class="p-3 font-mono text-purple-300">/p/about-us.html</td>
-                <td class="p-3">Site branding, mission statement & team info</td>
-                <td class="p-3"><span class="text-slate-400">Configured via Layout Widget</span></td>
-              </tr>
-              <tr class="hover:bg-slate-800/20">
-                <td class="p-3 font-semibold text-white">Disclaimer</td>
-                <td class="p-3 font-mono text-purple-300">/p/disclaimer.html</td>
-                <td class="p-3">DMCA, copyright compliance, non-hosting streaming notice</td>
-                <td class="p-3"><span class="text-slate-400">Configured via Layout Widget</span></td>
-              </tr>
-              <tr class="hover:bg-slate-800/20">
-                <td class="p-3 font-semibold text-white">Privacy Policy</td>
-                <td class="p-3 font-mono text-purple-300">/p/privacy-policy.html</td>
-                <td class="p-3">Cookies, ad policy, Supabase user privacy credentials</td>
-                <td class="p-3"><span class="text-slate-400">Configured via Layout Widget</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+        <!-- GitHub Repo Link Pill (Desktop) -->
+        <a href="https://github.com/ayengcoding/iqplay" target="_blank" rel="noopener" class="btn-action-pill desktop-only">
+          <i class="fa-brands fa-github"></i>
+          <span>ayengcoding/iqplay</span>
+        </a>
 
-    <!-- SECTION 2: LAYOUT GUIDE & WIDGET CONFIGURATION -->
-    <section id="layout-guide" class="scroll-mt-24 space-y-6">
-      <div class="flex items-center gap-3 border-b border-themeBorder pb-3">
-        <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-sm">2</div>
-        <div>
-          <h2 class="text-xl font-bold text-white">Layout Guide & Widget Configuration</h2>
-          <p class="text-xs text-slate-400">How to configure TMDb API, Hero Slider, Video Rails, and Source Providers in Blogger Layout</p>
-        </div>
-      </div>
+        <!-- Mobile Search Button (Phone) -->
+        <button class="icon-square-btn" id="search-trigger-mobile" aria-label="Search Documentation">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Widget 1: TMDB API Key -->
-        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-key text-amber-400"></i> TMDb API Config Widget
-            </span>
-            <span class="text-[10px] font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">Section: tmdb-api-config</span>
-          </div>
-          <p class="text-xs text-slate-400 leading-relaxed">
-            The template communicates with TMDb v3 REST endpoints asynchronously. Add an HTML/JavaScript widget inside this section with your TMDb API key:
-          </p>
-          <div class="bg-[#11141c] p-3 rounded-lg border border-themeBorder overflow-x-auto text-[11px] font-mono text-slate-300">
-&lt;script&gt;<br>
-&nbsp;&nbsp;window.apiKey = <span class="text-emerald-400">"YOUR_TMDB_V3_API_KEY"</span>;<br>
-&lt;/script&gt;
-          </div>
-        </div>
-
-        <!-- Widget 2: Image Carousel Slider -->
-        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-sliders text-purple-400"></i> Hero Carousel Slider
-            </span>
-            <span class="text-[10px] font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">Section: image-carousel</span>
-          </div>
-          <p class="text-xs text-slate-400 leading-relaxed">
-            Displays full-bleed backdrop slides with title logos, ratings, genre tags, and direct Play & Watchlist buttons. Simply put the TMDb endpoint query in a Text Widget:
-          </p>
-          <div class="bg-[#11141c] p-3 rounded-lg border border-themeBorder text-[11px] font-mono text-emerald-300">
-            movie/popular
-          </div>
-          <p class="text-[11px] text-slate-400">Or use <code class="text-purple-300">trending/all/day</code> for top trending daily titles.</p>
-        </div>
-
-        <!-- Widget 3: Homepage Rails (Horizontal Carousels) -->
-        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-layer-group text-sky-400"></i> Category Rails & Rows
-            </span>
-            <span class="text-[10px] font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">Section: tmdb-section-1</span>
-          </div>
-          <p class="text-xs text-slate-400 leading-relaxed">
-            Create endless curated categories by adding HTML widgets. The <b>Widget Title</b> will be displayed as the rail header (e.g., <i>Action Movies</i>, <i>Crime Series</i>), while the content holds the endpoint:
-          </p>
-          <div class="space-y-1.5 text-[11px] font-mono">
-            <div class="p-2 bg-[#11141c] rounded border border-themeBorder text-slate-300">
-              <span class="text-purple-400 font-semibold font-sans">Crime Series:</span><br>
-              discover/tv?with_genres=80&sort_by=popularity.desc
-            </div>
-            <div class="p-2 bg-[#11141c] rounded border border-themeBorder text-slate-300">
-              <span class="text-purple-400 font-semibold font-sans">Action Movies:</span><br>
-              discover/movie?with_genres=28&sort_by=popularity.desc
-            </div>
-          </div>
-        </div>
-
-        <!-- Widget 4: Video Sources & Failover -->
-        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-circle-play text-rose-400"></i> Multi-Server Streaming Config
-            </span>
-            <span class="text-[10px] font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">Section: video-sources</span>
-          </div>
-          <p class="text-xs text-slate-400 leading-relaxed">
-            Configured with failover servers. The player dynamically substitutes <code class="text-purple-300">${id}</code>, <code class="text-purple-300">${season}</code>, and <code class="text-purple-300">${episode}</code>:
-          </p>
-          <div class="space-y-1 text-[11px] font-mono">
-            <div class="p-2 bg-[#11141c] rounded border border-themeBorder text-slate-300 truncate">
-              <b class="text-white">Server 1 (VidSrc):</b> https://vidsrc.cc/v2/embed/movie/${id}
-            </div>
-            <div class="p-2 bg-[#11141c] rounded border border-themeBorder text-slate-300 truncate">
-              <b class="text-white">Server 2 (Videasy):</b> https://player.videasy.net/tv/${id}/${season}/${episode}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 3: MODULAR SHORTCODE ENGINE & INTERACTIVE GENERATOR -->
-    <section id="shortcode-engine" class="scroll-mt-24 space-y-6">
-      <div class="flex items-center gap-3 border-b border-themeBorder pb-3">
-        <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-sm">3</div>
-        <div>
-          <h2 class="text-xl font-bold text-white">Modular Shortcode Engine</h2>
-          <p class="text-xs text-slate-400">Generate responsive carousel rails, grids, top-lists, wide-cards, and filtered tab switchers</p>
-        </div>
-      </div>
-
-      <!-- Interactive Generator Box (5) -->
-      <div class="p-5 sm:p-6 rounded-2xl bg-themeCard border border-themeBorder shadow-xl space-y-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-themeBorder pb-4">
-          <div>
-            <h3 class="text-base font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> Interactive Shortcode Generator
-            </h3>
-            <p class="text-xs text-slate-400">Select parameters to live-generate embeddable shortcodes for posts or layout widgets</p>
-          </div>
-          <span class="self-start sm:self-auto px-2.5 py-1 rounded bg-purple-500/10 text-purple-300 text-xs font-mono border border-purple-500/20">Live Tool</span>
-        </div>
-
-        <!-- Controls Form -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-          <!-- Content Label -->
-          <div class="space-y-1.5">
-            <label class="font-bold text-slate-300">Category Label / TMDb Genre</label>
-            <input type="text" id="gen-label" value="Trending Now" class="w-full bg-[#11141c] border border-themeBorder rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500 transition-colors">
-          </div>
-
-          <!-- Layout Style -->
-          <div class="space-y-1.5">
-            <label class="font-bold text-slate-300">Layout Style</label>
-            <select id="gen-style" class="w-full bg-[#11141c] border border-themeBorder rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500 transition-colors">
-              <option value="carousel">Carousel (Horizontal No-Wrap)</option>
-              <option value="grid">Responsive Grid</option>
-              <option value="top-list">Top-10 Rank Badges</option>
-              <option value="wide-list">Wide Banner Cards</option>
-              <option value="filtered-switch">Filtered Switcher Tabs</option>
-            </select>
-          </div>
-
-          <!-- Items Count -->
-          <div class="space-y-1.5">
-            <label class="font-bold text-slate-300">Items Count (Limit)</label>
-            <input type="number" id="gen-count" value="12" min="1" max="30" class="w-full bg-[#11141c] border border-themeBorder rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500 transition-colors">
-          </div>
-
-          <!-- Sorting Mode -->
-          <div class="space-y-1.5">
-            <label class="font-bold text-slate-300">Sorting Mode</label>
-            <select id="gen-sort" class="w-full bg-[#11141c] border border-themeBorder rounded-lg px-3 py-2 text-white focus:outline-none focus:border-purple-500 transition-colors">
-              <option value="popularity.desc">Popularity (Descending)</option>
-              <option value="vote_average.desc">Rating / Top Rated</option>
-              <option value="release_date.desc">Release Date (Newest)</option>
-              <option value="revenue.desc">Box Office Revenue</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Generated Output Box -->
-        <div class="space-y-3">
-          <div class="flex items-center justify-between text-xs">
-            <span class="font-bold text-slate-300 flex items-center gap-1.5">
-              <i class="fa-solid fa-terminal text-purple-400"></i> Generated Shortcode / Engine Code:
-            </span>
-            <span id="copy-status" class="text-emerald-400 font-semibold hidden">Copied to Clipboard!</span>
-          </div>
-
-          <!-- Mobile responsive code container with overflow-x: auto so characters never squish vertically -->
-          <div class="w-full overflow-x-auto rounded-xl bg-[#0c0e14] border border-themeBorder p-4">
-            <pre class="text-xs font-mono text-purple-300 whitespace-pre" id="shortcode-output-box"></pre>
-          </div>
-
-          <!-- 1-Click Copy Shortcode Button (stretches full width on mobile) -->
-          <button id="copy-shortcode-btn" type="button" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-bold text-xs inline-flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30 transition-all">
-            <i class="fa-solid fa-copy"></i>
-            <span>Copy Shortcode</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Shortcode Variations Explanation Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-        <div class="p-4 rounded-xl bg-themeCard border border-themeBorder space-y-2">
-          <div class="text-xs font-bold text-purple-400 uppercase tracking-wide">Carousel No-Wrap</div>
-          <p class="text-xs text-slate-400">Smooth scrolling horizontal ribbon with left/right desktop arrows and swipe controls on mobile screens.</p>
-        </div>
-        <div class="p-4 rounded-xl bg-themeCard border border-themeBorder space-y-2">
-          <div class="text-xs font-bold text-purple-400 uppercase tracking-wide">Top-10 Rank Badges</div>
-          <p class="text-xs text-slate-400">Displays prominent numerical rank overlays (Top 1 through Top 10) styling like Netflix and iQiyi top charts.</p>
-        </div>
-        <div class="p-4 rounded-xl bg-themeCard border border-themeBorder space-y-2">
-          <div class="text-xs font-bold text-purple-400 uppercase tracking-wide">Filtered Switcher</div>
-          <p class="text-xs text-slate-400">Tab pills (All, Movies, TV Series, Anime) allowing users to switch category filters without reloading the page.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 4: CREATING A POST -->
-    <section id="creating-post" class="scroll-mt-24 space-y-6">
-      <div class="flex items-center gap-3 border-b border-themeBorder pb-3">
-        <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-sm">4</div>
-        <div>
-          <h2 class="text-xl font-bold text-white">Creating a Post (Full HTML View Template)</h2>
-          <p class="text-xs text-slate-400">Complete markup schema including backdrop, poster, iframe, #extra-meta, #episodes-data, #download-data, and #celebrity-data</p>
-        </div>
-      </div>
-
-      <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-4">
-        <p class="text-xs text-slate-300 leading-relaxed">
-          While iQPlay supports fully automated TMDb fetching by ID, you can also publish custom manual articles or overrides in Blogger. Switch your post editor to <b>HTML view</b> and paste this complete schema:
-        </p>
-
-        <!-- Post Template Code Box -->
-        <div class="w-full overflow-x-auto rounded-xl bg-[#0c0e14] border border-themeBorder p-4">
-          <pre class="text-xs font-mono text-slate-300 whitespace-pre" id="post-template-code">&lt;!-- iQPlay Universal Post Schema --&gt;
-&lt;div class="iqplay-post-entry"&gt;
-
-  &lt;!-- 1. Backdrop &amp; Poster Images --&gt;
-  &lt;div class="iq-hero-art"&gt;
-    &lt;img id="post-backdrop" src="https://image.tmdb.org/t/p/w1280/backdrop.jpg" alt="Backdrop Banner" style="display:none;" /&gt;
-    &lt;img id="post-poster" src="https://image.tmdb.org/t/p/w500/poster.jpg" alt="Official Poster" class="main-poster" /&gt;
-  &lt;/div&gt;
-
-  &lt;!-- 2. Primary Video Stream / Embed Iframe --&gt;
-  &lt;div class="iq-player-container"&gt;
-    &lt;iframe id="main-stream-player" src="https://vidsrc.cc/v2/embed/movie/1022789" frameborder="0" allowfullscreen="true" scrolling="no"&gt;&lt;/iframe&gt;
-  &lt;/div&gt;
-
-  &lt;!-- 3. Extra Meta Data (JSON Block) --&gt;
-  &lt;div id="extra-meta" style="display:none;"&gt;{
-    "tmdb_id": 1022789,
-    "imdb_id": "tt11198330",
-    "type": "movie",
-    "release_year": "2024",
-    "runtime": "100 min",
-    "rating": "7.8",
-    "quality": "4K Ultra HD",
-    "genres": ["Animation", "Family", "Adventure", "Comedy"],
-    "synopsis": "Teenager Riley is experiencing new emotions inside Headquarters, including Anxiety, Envy, Ennui, and Embarrassment."
-  }&lt;/div&gt;
-
-  &lt;!-- 4. Episodes Multi-Server Data (For Series / Anime) --&gt;
-  &lt;div id="episodes-data" style="display:none;"&gt;[
-    {
-      "season": 1,
-      "episode": 1,
-      "title": "Pilot: The Journey Begins",
-      "servers": {
-        "VidSrc": "https://vidsrc.cc/v2/embed/tv/60625/1/1",
-        "Videasy": "https://player.videasy.net/tv/60625/1/1",
-        "VidRock": "https://vidrock.net/embed/60625-1-1"
-      }
-    },
-    {
-      "season": 1,
-      "episode": 2,
-      "title": "Into the Unknown",
-      "servers": {
-        "VidSrc": "https://vidsrc.cc/v2/embed/tv/60625/1/2",
-        "Videasy": "https://player.videasy.net/tv/60625/1/2",
-        "VidRock": "https://vidrock.net/embed/60625-1-2"
-      }
-    }
-  ]&lt;/div&gt;
-
-  &lt;!-- 5. Download Links Data (Multi-Quality) --&gt;
-  &lt;div id="download-data" style="display:none;"&gt;[
-    {"server": "Mega Drive", "resolution": "1080p Web-DL", "size": "2.1 GB", "url": "https://mega.nz/file/sample1"},
-    {"server": "Google Drive", "resolution": "720p HD", "size": "950 MB", "url": "https://drive.google.com/file/d/sample2"},
-    {"server": "Direct Filer", "resolution": "480p SD", "size": "450 MB", "url": "https://filer.org/dl/sample3"}
-  ]&lt;/div&gt;
-
-  &lt;!-- 6. Celebrity &amp; Cast Data --&gt;
-  &lt;div id="celebrity-data" style="display:none;"&gt;[
-    {"name": "Amy Poehler", "character": "Joy (voice)", "photo": "https://image.tmdb.org/t/p/w185/AmyPoehler.jpg"},
-    {"name": "Maya Hawke", "character": "Anxiety (voice)", "photo": "https://image.tmdb.org/t/p/w185/MayaHawke.jpg"},
-    {"name": "Phyllis Smith", "character": "Sadness (voice)", "photo": "https://image.tmdb.org/t/p/w185/PhyllisSmith.jpg"}
-  ]&lt;/div&gt;
-
-&lt;/div&gt;</pre>
-        </div>
-
-        <!-- 1-Click Copy Post Schema Button -->
-        <button id="copy-post-code-btn" type="button" class="w-full sm:w-auto px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs inline-flex items-center justify-center gap-2 transition-all shadow-md shadow-purple-600/30">
-          <i class="fa-solid fa-copy"></i>
-          <span>Copy Post Schema Code</span>
+        <!-- Theme Switcher (Persistent Dark / Light) -->
+        <button class="icon-square-btn" id="theme-toggle-btn" aria-label="Switch Theme Mode">
+          <i class="fa-solid fa-sun" id="theme-icon-sun" style="display: none;"></i>
+          <i class="fa-solid fa-moon" id="theme-icon-moon"></i>
         </button>
       </div>
-    </section>
-
-    <!-- SECTION 5: USER SYSTEM, AVATARS & NOTIFICATIONS -->
-    <section id="user-system" class="scroll-mt-24 space-y-6">
-      <div class="flex items-center gap-3 border-b border-themeBorder pb-3">
-        <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-sm">5</div>
-        <div>
-          <h2 class="text-xl font-bold text-white">User System, Avatars & Notifications</h2>
-          <p class="text-xs text-slate-400">Supabase authentication, anime avatar packs, live comment reactions, and broadcast push toasts</p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Supabase Client Setup -->
-        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
-          <div class="text-sm font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-database text-emerald-400"></i> Supabase Cloud Auth & Comments
-          </div>
-          <p class="text-xs text-slate-400 leading-relaxed">
-            iQPlay connects directly to Supabase REST endpoints for clientless zero-server user login, watchlist sync across devices, and live episode discussions:
-          </p>
-          <div class="bg-[#11141c] p-3 rounded-lg border border-themeBorder text-[11px] font-mono text-slate-300">
-            <span class="text-purple-400">const</span> { createClient } = supabase;<br>
-            <span class="text-purple-400">const</span> client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-          </div>
-          <ul class="text-xs text-slate-300 list-disc list-inside space-y-1">
-            <li><b>Real-time comments:</b> Post reactions & live reply feeds</li>
-            <li><b>Custom avatars:</b> Person, Animal, Animation, and Emoji categories</li>
-            <li><b>Persistent watchlist:</b> Saved directly to user cloud account</li>
-          </ul>
-        </div>
-
-        <!-- Notification Center -->
-        <div class="p-5 rounded-xl bg-themeCard border border-themeBorder space-y-3">
-          <div class="text-sm font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-bell text-amber-400"></i> Floating Notification & Toast Center
-          </div>
-          <p class="text-xs text-slate-400 leading-relaxed">
-            Instant feedback on actions like adding titles to watchlists, copying share URLs, and switching stream mirrors:
-          </p>
-          <div class="p-3 rounded-lg bg-[#11141c] border border-themeBorder space-y-2">
-            <div class="flex items-center justify-between text-xs">
-              <span class="text-slate-300 font-mono">showToastNotification(msg, type)</span>
-              <button onclick="triggerToastDemo()" class="text-[10px] px-2 py-0.5 rounded bg-purple-600 text-white font-semibold hover:bg-purple-500">Test Toast</button>
-            </div>
-            <div class="text-[11px] text-slate-400">
-              Supports <code class="text-emerald-400">'success'</code>, <code class="text-amber-400">'info'</code>, and <code class="text-rose-400">'error'</code> toast alerts automatically positioned at bottom screen.
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 6: COMMUNITY & SOCIALS -->
-    <section id="community" class="scroll-mt-24 space-y-6">
-      <div class="flex items-center gap-3 border-b border-themeBorder pb-3">
-        <div class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-sm">6</div>
-        <div>
-          <h2 class="text-xl font-bold text-white">Community & Socials</h2>
-          <p class="text-xs text-slate-400">Connect with Ayeng Coding, join developer groups, report bugs, and purchase official licenses</p>
-        </div>
-      </div>
-
-      <!-- Links Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Gumroad Store -->
-        <a href="https://ayengstore.gumroad.com/l/iqplay" target="_blank" rel="noopener" class="p-5 rounded-xl bg-gradient-to-br from-purple-900/30 via-themeCard to-themeCard border border-purple-500/30 hover:border-purple-500 transition-all group">
-          <div class="flex items-center justify-between mb-3">
-            <div class="w-10 h-10 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
-              <i class="fa-solid fa-crown text-amber-300"></i>
-            </div>
-            <span class="text-[10px] uppercase font-bold text-purple-300 tracking-wider">Official Store</span>
-          </div>
-          <h3 class="text-sm font-bold text-white mb-1">Gumroad License Store</h3>
-          <p class="text-xs text-slate-400">Get lifetime updates, premium source files, and VIP support for iQPlay.</p>
-        </a>
-
-        <!-- Telegram Official Community -->
-        <a href="https://t.me/ayengcodingofficial" target="_blank" rel="noopener" class="p-5 rounded-xl bg-themeCard border border-themeBorder hover:border-sky-500/50 transition-all group">
-          <div class="flex items-center justify-between mb-3">
-            <div class="w-10 h-10 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
-              <i class="fa-brands fa-telegram"></i>
-            </div>
-            <span class="text-[10px] uppercase font-bold text-sky-400 tracking-wider">Group Chat</span>
-          </div>
-          <h3 class="text-sm font-bold text-white mb-1">Telegram Community</h3>
-          <p class="text-xs text-slate-400">@ayengcodingofficial — Connect with hundreds of webmasters and stream developers.</p>
-        </a>
-
-        <!-- Telegram Channel -->
-        <a href="https://t.me/ayeng_coding" target="_blank" rel="noopener" class="p-5 rounded-xl bg-themeCard border border-themeBorder hover:border-sky-500/50 transition-all group">
-          <div class="flex items-center justify-between mb-3">
-            <div class="w-10 h-10 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
-              <i class="fa-solid fa-bullhorn"></i>
-            </div>
-            <span class="text-[10px] uppercase font-bold text-sky-400 tracking-wider">Broadcast</span>
-          </div>
-          <h3 class="text-sm font-bold text-white mb-1">Telegram Channel</h3>
-          <p class="text-xs text-slate-400">@ayeng_coding — Product releases, update changelogs, and security patches.</p>
-        </a>
-
-        <!-- Direct Support -->
-        <a href="https://t.me/ayengcoding" target="_blank" rel="noopener" class="p-5 rounded-xl bg-themeCard border border-themeBorder hover:border-purple-500/50 transition-all group">
-          <div class="flex items-center justify-between mb-3">
-            <div class="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
-              <i class="fa-solid fa-headset"></i>
-            </div>
-            <span class="text-[10px] uppercase font-bold text-purple-400 tracking-wider">Direct Message</span>
-          </div>
-          <h3 class="text-sm font-bold text-white mb-1">Personal Support</h3>
-          <p class="text-xs text-slate-400">@ayengcoding — Reach author Ariel Mentawan for theme setups and customizations.</p>
-        </a>
-
-        <!-- Facebook -->
-        <a href="https://www.facebook.com/acohcayeng" target="_blank" rel="noopener" class="p-5 rounded-xl bg-themeCard border border-themeBorder hover:border-blue-500/50 transition-all group">
-          <div class="flex items-center justify-between mb-3">
-            <div class="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
-              <i class="fa-brands fa-facebook"></i>
-            </div>
-            <span class="text-[10px] uppercase font-bold text-blue-400 tracking-wider">Profile</span>
-          </div>
-          <h3 class="text-sm font-bold text-white mb-1">Facebook Profile</h3>
-          <p class="text-xs text-slate-400">acohcayeng — Collaborations, theme updates, and tech discussions.</p>
-        </a>
-
-        <!-- Instagram -->
-        <a href="https://www.instagram.com/acoh_cariel/" target="_blank" rel="noopener" class="p-5 rounded-xl bg-themeCard border border-themeBorder hover:border-pink-500/50 transition-all group">
-          <div class="flex items-center justify-between mb-3">
-            <div class="w-10 h-10 rounded-lg bg-pink-500/10 text-pink-400 flex items-center justify-center text-lg group-hover:scale-110 transition-transform">
-              <i class="fa-brands fa-instagram"></i>
-            </div>
-            <span class="text-[10px] uppercase font-bold text-pink-400 tracking-wider">Follow</span>
-          </div>
-          <h3 class="text-sm font-bold text-white mb-1">Instagram</h3>
-          <p class="text-xs text-slate-400">@acoh_cariel — Behind the scenes and upcoming theme previews.</p>
-        </a>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- FOOTER -->
-  <footer class="w-full bg-[#11141c] border-t border-themeBorder py-8 px-4 text-center text-xs text-slate-500 space-y-2 mt-12">
-    <div class="flex items-center justify-center gap-2 text-slate-400 font-semibold">
-      <span>iQPlay TMDB Blogger Streaming Theme</span>
-      <span>•</span>
-      <span>Engineered by <a href="https://github.com/ayengcoding" class="text-purple-400 hover:underline">Ayeng Coding</a></span>
     </div>
-    <p>© 2026 Ayeng Coding. All rights reserved. Designed for Blogger CMS developers.</p>
-  </footer>
 
-  <!-- Notification Toast Container -->
-  <div id="docs-toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 px-4 py-2.5 rounded-xl bg-purple-600 text-white text-xs font-semibold shadow-xl shadow-purple-600/30 flex items-center gap-2">
-    <i class="fa-solid fa-circle-check"></i>
-    <span id="docs-toast-msg">Notification</span>
+    <!-- Tier 2: Sub-Navigation Horizontal Tabs -->
+    <nav class="header-tier2" aria-label="Sub-navigation Tabs">
+      <div class="tier2-tabs">
+        <a href="#intro" class="tier2-tab-link active" data-doc="intro">
+          <i class="fa-solid fa-book-open text-xs"></i> Documentation
+        </a>
+        <a href="https://github.com/ayengcoding/iqplay" target="_blank" rel="noopener" class="tier2-tab-link">
+          <i class="fa-brands fa-github text-xs"></i> GitHub
+        </a>
+        <a href="https://iqplayofficial.blogspot.com/" target="_blank" rel="noopener" class="tier2-tab-link">
+          <i class="fa-solid fa-film text-xs"></i> Community Live Demo
+        </a>
+        <a href="https://ayengstore.gumroad.com/l/iqplay" target="_blank" rel="noopener" class="tier2-tab-link special-buy">
+          <i class="fa-solid fa-bolt text-xs"></i> Get License ($39.00)
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- OFF-CANVAS BACKDROP OVERLAY -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <!-- PAGE WRAPPER (SIDEBAR + ARTICLE CONTENT) -->
+  <div class="page-wrapper">
+    
+    <!-- LEFT SIDEBAR / OFF-CANVAS MOBILE DRAWER -->
+    <aside class="sidebar" id="doc-sidebar">
+      
+      <!-- Group 1: Get Started -->
+      <div>
+        <div class="sidebar-group-title"><i class="fa-solid fa-compass"></i> Get Started</div>
+        <ul class="sidebar-nav-list">
+          <li><a class="sidebar-link active" data-doc="intro"><i class="fa-solid fa-house"></i> Introduction &amp; Core</a></li>
+          <li><a class="sidebar-link" data-doc="quickstart"><i class="fa-solid fa-bolt"></i> 4-Step Quickstart</a></li>
+          <li><a class="sidebar-link" data-doc="demo-posts"><i class="fa-solid fa-file-import"></i> Import Demo Content</a></li>
+          <li><a class="sidebar-link" data-doc="essential-pages"><i class="fa-solid fa-layer-group"></i> Essential Pages Setup</a></li>
+        </ul>
+      </div>
+
+      <!-- Group 2: General Information -->
+      <div>
+        <div class="sidebar-group-title"><i class="fa-solid fa-shield-halved"></i> General Information</div>
+        <ul class="sidebar-nav-list">
+          <li><a class="sidebar-link" data-doc="license-system"><i class="fa-solid fa-key"></i> License &amp; Domain Lock</a></li>
+          <li><a class="sidebar-link" data-doc="changelog"><i class="fa-solid fa-clock-rotate-left"></i> Development &amp; Changelog</a></li>
+        </ul>
+      </div>
+
+      <!-- Group 3: Dynamic Integrations -->
+      <div>
+        <div class="sidebar-group-title"><i class="fa-solid fa-server"></i> Dynamic Integrations</div>
+        <ul class="sidebar-nav-list">
+          <li><a class="sidebar-link" data-doc="tmdb-config"><i class="fa-solid fa-clapperboard"></i> TMDb API v3 Engine</a></li>
+          <li><a class="sidebar-link" data-doc="supabase-auth"><i class="fa-solid fa-user-lock"></i> Supabase User Auth &amp; Sync</a></li>
+          <li><a class="sidebar-link" data-doc="multi-server"><i class="fa-solid fa-play"></i> Multi-Server Video Players</a></li>
+          <li><a class="sidebar-link" data-doc="counter-comments"><i class="fa-solid fa-comments"></i> Realtime Stats &amp; Comments</a></li>
+        </ul>
+      </div>
+
+      <!-- Group 4: Ecosystem & Formatting -->
+      <div>
+        <div class="sidebar-group-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Ecosystem &amp; Tools</div>
+        <ul class="sidebar-nav-list">
+          <li><a class="sidebar-link" data-doc="shortcode-builder"><i class="fa-solid fa-code"></i> Shortcode Generator</a></li>
+          <li><a class="sidebar-link" data-doc="post-creator"><i class="fa-solid fa-pen-nib"></i> Post Schema Creator</a></li>
+          <li><a class="sidebar-link" data-doc="troubleshooting"><i class="fa-solid fa-wrench"></i> Troubleshooting &amp; FAQ</a></li>
+        </ul>
+      </div>
+
+      <!-- Group 5: Official Community & Socials -->
+      <div>
+        <div class="sidebar-group-title"><i class="fa-solid fa-headset"></i> Official Channels</div>
+        <ul class="sidebar-nav-list">
+          <li><a class="sidebar-link" data-doc="community"><i class="fa-solid fa-users-viewfinder"></i> Community &amp; Support</a></li>
+        </ul>
+      </div>
+
+      <!-- Sidebar Footer / Community Group -->
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-title">Community &amp; Connect</div>
+        <div class="social-quick-grid">
+          <a href="https://t.me/ayeng_coding" target="_blank" rel="noopener" class="social-quick-link" title="Telegram Channel"><i class="fa-brands fa-telegram"></i></a>
+          <a href="https://t.me/ayengcodingofficial" target="_blank" rel="noopener" class="social-quick-link" title="Telegram Group"><i class="fa-solid fa-comments"></i></a>
+          <a href="https://www.facebook.com/acohcayeng" target="_blank" rel="noopener" class="social-quick-link" title="Facebook"><i class="fa-brands fa-facebook"></i></a>
+          <a href="https://www.instagram.com/acoh_cariel/" target="_blank" rel="noopener" class="social-quick-link" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="https://github.com/ayengcoding" target="_blank" rel="noopener" class="social-quick-link" title="GitHub"><i class="fa-brands fa-github"></i></a>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- MAIN ARTICLE CONTAINER -->
+    <main class="doc-content-area" id="main-content" role="main">
+      <!-- Rendered dynamically by JavaScript via DOCS_DATA -->
+      <div id="article-mount"></div>
+
+      <!-- Full-Width Bottom Pager -->
+      <nav class="bottom-pager-nav" id="bottom-pager" aria-label="Article Pagination">
+        <a class="pager-card pager-prev" id="pager-prev-btn" style="visibility: hidden;">
+          <span class="pager-direction"><i class="fa-solid fa-arrow-left"></i> Previous</span>
+          <span class="pager-title" id="pager-prev-title">Previous Article</span>
+        </a>
+        <a class="pager-card pager-next" id="pager-next-btn">
+          <span class="pager-direction">Next <i class="fa-solid fa-arrow-right"></i></span>
+          <span class="pager-title" id="pager-next-title">Next Article</span>
+        </a>
+      </nav>
+    </main>
+
   </div>
 
-  <!-- JAVASCRIPT: SHORTCODE GENERATOR & SCROLLSPY AUTO-CENTER -->
+  <!-- SEARCH MODAL -->
+  <div class="search-modal-backdrop" id="search-modal-backdrop" role="dialog" aria-modal="true" aria-label="Search Documentation">
+    <div class="search-modal-container">
+      <div class="search-modal-header">
+        <i class="fa-solid fa-magnifying-glass text-muted"></i>
+        <input type="text" class="search-modal-input" id="search-input" placeholder="Search articles, keywords, APIs, shortcodes..." autocomplete="off">
+        <button class="icon-square-btn" id="search-close-btn" style="width: 28px; height: 28px; font-size: 0.8rem;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="search-modal-results" id="search-results-list">
+        <!-- Populated on keystroke -->
+      </div>
+      <div class="search-modal-footer">
+        <span>Navigate with <code>&uarr;</code> <code>&darr;</code> and <code>Enter</code></span>
+        <span><code>ESC</code> to exit</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast-box" id="docs-toast">
+    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="docs-toast-msg">Copied to clipboard!</span>
+  </div>
+
   <script>
-    // 5. Shortcode Generator Logic
-    const labelInput = document.getElementById('gen-label');
-    const styleInput = document.getElementById('gen-style');
-    const countInput = document.getElementById('gen-count');
-    const sortInput = document.getElementById('gen-sort');
-    const outputBox = document.getElementById('shortcode-output-box');
-    const copyBtn = document.getElementById('copy-shortcode-btn');
-    const copyStatus = document.getElementById('copy-status');
-    const copyPostBtn = document.getElementById('copy-post-code-btn');
+    /* ========================================================
+       DOCS_DATA: Structured Documentation Articles
+       ======================================================== */
+    const DOCS_DATA = {
+      intro: {
+        badge: "Overview & Specifications",
+        title: "Introduction to Theme Core",
+        lead: "iQPlay TMDB is a modern, high-performance streaming theme for Blogger powered by the TMDb REST API, Supabase Cloud authentication, and dynamic multi-server failover video streaming.",
+        content: `
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <img src="banner.jpg" alt="iQPlay TMDB Theme Banner" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+          </div>
 
-    function updateShortcode() {
-      const label = labelInput.value.trim() || 'Featured Content';
-      const style = styleInput.value;
-      const count = countInput.value || 12;
-      const sort = sortInput.value;
+          <div class="callout callout-info">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>
+              <strong>Production Release v2.4.0:</strong> Engineered specifically for Blogger (Blogspot XML Engine). Requires zero expensive server hosting or database maintenance.
+            </div>
+          </div>
 
-      let code = '';
-      if (style === 'carousel') {
-        code = `<!-- iQPlay Carousel Rail (Horizontal Scroll) -->
-<div class="tmdb-wrapper" data-label="${label}" data-limit="${count}" data-sort="${sort}">
-  <div class="tmdb-header">
-    <h3 class="tmdb-title">${label}</h3>
-    <div class="tmdb-nav-arrows">
-      <button class="tmdb-scroll left" aria-label="Previous">&larr;</button>
-      <button class="tmdb-scroll right" aria-label="Next">&rarr;</button>
-    </div>
-  </div>
-  <div class="tmdb-row nowrap-carousel" data-query="discover/movie?sort_by=${sort}&page=1"></div>
-</div>`;
-      } else if (style === 'grid') {
-        code = `<!-- iQPlay Responsive Grid Layout -->
-<div class="tmdb-grid-wrapper" data-label="${label}" data-limit="${count}">
-  <h3 class="tmdb-title">${label}</h3>
-  <div class="tmdb-cards-grid" data-query="discover/tv?sort_by=${sort}&page=1"></div>
-</div>`;
-      } else if (style === 'top-list') {
-        code = `<!-- iQPlay Top-10 Ranked Chart -->
-<div class="tmdb-toplist-wrapper" data-label="${label}" data-limit="${count}">
-  <h3 class="tmdb-title font-extrabold">${label} (Top Rated)</h3>
-  <div class="tmdb-top-rank-rail" data-query="trending/all/week"></div>
-</div>`;
-      } else if (style === 'wide-list') {
-        code = `<!-- iQPlay Wide Banner Cards -->
-<div class="tmdb-wide-wrapper" data-label="${label}">
-  <h3 class="tmdb-title">${label}</h3>
-  <div class="tmdb-wide-slider" data-query="movie/now_playing?page=1"></div>
-</div>`;
-      } else if (style === 'filtered-switch') {
-        code = `<!-- iQPlay Filter Switcher Rail -->
-<div class="tmdb-filtered-wrapper" data-label="${label}">
-  <div class="filter-switch-nav">
-    <button class="filter-tab active" data-filter="all">All</button>
-    <button class="filter-tab" data-filter="movie">Movies</button>
-    <button class="filter-tab" data-filter="tv">TV Series</button>
-    <button class="filter-tab" data-filter="anime">Anime</button>
-  </div>
-  <div class="tmdb-row" data-query="discover/movie?sort_by=${sort}&page=1"></div>
-</div>`;
+          <h2>Key Architecture Highlights</h2>
+          <div class="step-item">
+            <div class="step-badge"><i class="fa-solid fa-bolt"></i></div>
+            <div class="step-body">
+              <h4>Realtime TMDb v3 Integration</h4>
+              <p>Direct asynchronous metadata lookup for over 900,000+ movies and TV series. Backdrops, logos, cast lists, trailers, and seasons load dynamically on the client without bloating your Blogger storage.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge"><i class="fa-solid fa-server"></i></div>
+            <div class="step-body">
+              <h4>Multi-Server Dynamic Player</h4>
+              <p>Built-in failover video architecture supporting SuperEmbed, 2Embed, VidSrc, AutoEmbed, plus custom direct MP4/m3u8 HLS streams. Visitors can switch servers instantly if a source drops.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge"><i class="fa-solid fa-users"></i></div>
+            <div class="step-body">
+              <h4>Supabase Cloud User Accounts &amp; Watchlist</h4>
+              <p>Complete authentication engine allowing visitors to sign up, sign in, save favorites, track watch history across sessions, and manage their personal library securely.</p>
+            </div>
+          </div>
+
+          <h2>Live Demo &amp; Official Links</h2>
+          <ul>
+            <li><strong>Official Store:</strong> <a href="https://ayengstore.gumroad.com/l/iqplay" target="_blank">ayengstore.gumroad.com/l/iqplay</a></li>
+            <li><strong>Interactive Live Demo:</strong> <a href="https://iqplayofficial.blogspot.com/" target="_blank">iqplayofficial.blogspot.com</a></li>
+            <li><strong>GitHub Repository:</strong> <a href="https://github.com/ayengcoding/iqplay" target="_blank">github.com/ayengcoding/iqplay</a></li>
+            <li><strong>Documentation Portal:</strong> <a href="https://ayengcoding.github.io/iqplay/" target="_blank">ayengcoding.github.io/iqplay</a></li>
+          </ul>
+        `
+      },
+
+      quickstart: {
+        badge: "Installation Guide",
+        title: "Quickstart & 4-Step Installation",
+        lead: "Deploy iQPlay TMDB to your Blogger website in under five minutes with this clean XML template restoration workflow.",
+        content: `
+          <div class="callout callout-warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div>
+              <strong>Backup First:</strong> Always make a full backup of your current Blogger theme before applying any new XML layout file.
+            </div>
+          </div>
+
+          <h2>4-Step Theme Installation</h2>
+          
+          <div class="step-item">
+            <div class="step-badge">1</div>
+            <div class="step-body">
+              <h4>Unpack Theme Package</h4>
+              <p>Locate the <code>Product - Ready to Sell/iQplay-premium.xml</code> file (or <code>iQplay.xml</code> from the Original folder) on your computer.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">2</div>
+            <div class="step-body">
+              <h4>Open Blogger Theme Editor</h4>
+              <p>Log in to your <strong>Blogger Dashboard</strong>, navigate to <strong>Theme</strong> in the left sidebar, click the dropdown next to the <strong>Customize</strong> button, and select <strong>Restore</strong>.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">3</div>
+            <div class="step-body">
+              <h4>Upload iQplay-premium.xml</h4>
+              <p>Select your <code>.xml</code> file. Alternatively, click <strong>Edit HTML</strong>, press <kbd>Ctrl+A</kbd>, <kbd>Backspace</kbd>, and paste the raw XML contents into the editor, then click <strong>Save (Disk Icon)</strong>.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">4</div>
+            <div class="step-body">
+              <h4>Configure Mobile View to Desktop</h4>
+              <p>In the Theme page dropdown, click <strong>Mobile Settings</strong>, choose <strong>Desktop</strong>, and save. This ensures Blogger renders the full responsive layout instead of Blogger's legacy mobile skin.</p>
+            </div>
+          </div>
+
+          <h2>Verification Code Check</h2>
+          <div class="code-box">
+            <div class="code-box-header">
+              <span>Blogger HTML Header Tag</span>
+              <button class="code-copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
+            <pre><code>&lt;!-- Ensure your template begins with clean viewport &amp; UTF-8 --&gt;
+&lt;meta content='width=device-width, initial-scale=1.0, viewport-fit=cover' name='viewport'/&gt;
+&lt;meta expr:charset='data:blog.encoding'/&gt;</code></pre>
+          </div>
+        `
+      },
+
+      "demo-posts": {
+        badge: "Content Ingestion",
+        title: "Import Demo Content (feed.atom)",
+        lead: "Populate your fresh streaming blog with pre-configured movie and TV series schemas using Blogger's built-in Content Import utility.",
+        content: `
+          <p>Importing demo content allows you to instantly verify slider configurations, genre carousels, and the multi-server video player before publishing your own titles.</p>
+
+          <h2>Import Instructions</h2>
+          <div class="step-item">
+            <div class="step-badge">1</div>
+            <div class="step-body">
+              <h4>Go to Blogger Settings</h4>
+              <p>Navigate to <strong>Dashboard &rarr; Settings &rarr; Manage Blog</strong>.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">2</div>
+            <div class="step-body">
+              <h4>Click Import Content</h4>
+              <p>Select <strong>Import Content</strong>. If prompted, complete the reCAPTCHA verification.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">3</div>
+            <div class="step-body">
+              <h4>Upload Atom Feed / XML Export</h4>
+              <p>Upload your exported Blogger XML content file. Blogger will import all demo posts, labels, and metadata automatically.</p>
+            </div>
+          </div>
+
+          <div class="callout callout-tip">
+            <i class="fa-solid fa-lightbulb"></i>
+            <div>
+              <strong>Label Convention:</strong> For movies, tag posts with <code>Movie</code> and genre labels (e.g. <code>Action</code>, <code>Sci-Fi</code>). For TV series, tag with <code>Series</code> and <code>TV Shows</code> so the home sliders categorize them accurately.
+            </div>
+          </div>
+        `
+      },
+
+      "essential-pages": {
+        badge: "Page Architecture",
+        title: "Essential Pages Setup",
+        lead: "Set up the mandatory Blogger standalone static pages required by the iQPlay routing and player engine.",
+        content: `
+          <p>The theme relies on dedicated static pages for player loading, details inspection, and user library management. Navigate to <strong>Blogger Dashboard &rarr; Pages &rarr; New Page</strong> and publish the following pages:</p>
+
+          <h2>Mandatory Pages Table</h2>
+          <div style="overflow-x: auto; margin: 1.25rem 0;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+              <thead>
+                <tr style="background: var(--bg-subtle); border-bottom: 2px solid var(--border); text-align: left;">
+                  <th style="padding: 0.6rem 0.8rem;">Page Title</th>
+                  <th style="padding: 0.6rem 0.8rem;">Permalink Slug</th>
+                  <th style="padding: 0.6rem 0.8rem;">Function &amp; Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 0.6rem 0.8rem; font-weight: 600;">Player</td>
+                  <td style="padding: 0.6rem 0.8rem;"><code>/p/player.html</code></td>
+                  <td style="padding: 0.6rem 0.8rem;">Hosts the multi-server video player shell, server switcher, and episodes.</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 0.6rem 0.8rem; font-weight: 600;">Details</td>
+                  <td style="padding: 0.6rem 0.8rem;"><code>/p/details.html</code></td>
+                  <td style="padding: 0.6rem 0.8rem;">Displays rich TMDb synopsis, cast cards, trailer modals, and season listings.</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 0.6rem 0.8rem; font-weight: 600;">Library</td>
+                  <td style="padding: 0.6rem 0.8rem;"><code>/p/library.html</code></td>
+                  <td style="padding: 0.6rem 0.8rem;">User watchlist, bookmark manager, and watch history dashboard.</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border);">
+                  <td style="padding: 0.6rem 0.8rem; font-weight: 600;">Disclaimer</td>
+                  <td style="padding: 0.6rem 0.8rem;"><code>/p/disclaimer.html</code></td>
+                  <td style="padding: 0.6rem 0.8rem;">DMCA and streaming copyright disclaimer for legal compliance.</td>
+                </tr>
+                <tr>
+                  <td style="padding: 0.6rem 0.8rem; font-weight: 600;">Privacy Policy</td>
+                  <td style="padding: 0.6rem 0.8rem;"><code>/p/privacy-policy.html</code></td>
+                  <td style="padding: 0.6rem 0.8rem;">Privacy terms and cookie consent documentation.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="callout callout-warning">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div>
+              <strong>Permalink Precision:</strong> Make sure the custom permalinks match exactly: <code>player.html</code>, <code>details.html</code>, and <code>library.html</code>.
+            </div>
+          </div>
+        `
+      },
+
+      "license-system": {
+        badge: "Security & Anti-Theft",
+        title: "License System & Anti-Theft Domain Lock",
+        lead: "Learn how the client-side license verification protects your copy and how to authorize your domain name.",
+        content: `
+          <p>iQPlay TMDB includes an embedded anti-theft domain validation module to ensure authentic buyer verification and prevent unauthorized cloning.</p>
+
+          <h2>Domain Authorization Workflow</h2>
+          <div class="step-item">
+            <div class="step-badge">1</div>
+            <div class="step-body">
+              <h4>Acquire Your License Key</h4>
+              <p>Upon purchasing the theme from Gumroad (<a href="https://ayengstore.gumroad.com/l/iqplay" target="_blank">ayengstore.gumroad.com/l/iqplay</a>), your unique license key is emailed to you.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">2</div>
+            <div class="step-body">
+              <h4>Register Your Active Domain</h4>
+              <p>Go to the official registration portal: <a href="https://abefilmofficialzone.blogspot.com/p/registration-process.html" target="_blank">Registration Process Portal</a> and submit your domain (e.g. <code>mysite.blogspot.com</code> or custom domain <code>stream.mydomain.com</code>).</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge">3</div>
+            <div class="step-body">
+              <h4>Domain Migration Policy</h4>
+              <p>Each license key authorizes <strong>one active domain</strong> at a time. If moving to a new custom domain, deregister the existing domain first before registering the new one.</p>
+            </div>
+          </div>
+
+          <div class="callout callout-info">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>
+              <strong>Need Domain Reset Assistance?</strong> Send a direct message to the author on Telegram: <a href="https://t.me/ayengcoding" target="_blank">@ayengcoding</a>.
+            </div>
+          </div>
+        `
+      },
+
+      changelog: {
+        badge: "Release History",
+        title: "Development & Changelog",
+        lead: "Detailed version history and evolutionary roadmap of the iQPlay TMDB streaming architecture.",
+        content: `
+          <h2>Version 2.4.0 — Current Stable</h2>
+          <ul>
+            <li><strong>Supabase V2 Engine:</strong> Integrated Supabase JS v2 for real-time authentication, session persistence, and instant watchlist synchronization.</li>
+            <li><strong>Dual Theme Switcher:</strong> Added persistent Dark and Light mode switcher with auto-saving to <code>localStorage</code>.</li>
+            <li><strong>Failover Server 4 &amp; 5:</strong> Added automated failover triggers for external HLS/m3u8 sources.</li>
+            <li><strong>Responsive Navigation Drawer:</strong> 100% overhaul of mobile drawer and touch-swipe subnav pill bar.</li>
+          </ul>
+
+          <h2>Version 2.0.0</h2>
+          <ul>
+            <li><strong>Modular JavaScript Engine:</strong> Split core scripts into bundle architecture (homepage, details, player, library, protection).</li>
+            <li><strong>Dynamic TMDb v3 Synopses:</strong> Auto-fetching cast cards and season episode grids directly from TMDb REST API.</li>
+          </ul>
+
+          <h2>Version 1.0.0</h2>
+          <ul>
+            <li>Initial public release with responsive grid, multi-server video switcher, and basic theme layout settings.</li>
+          </ul>
+        `
+      },
+
+      "tmdb-config": {
+        badge: "API Architecture",
+        title: "TMDb API v3 Configuration",
+        lead: "Connect your free The Movie Database (TMDb) API key to unlock automated posters, backdrops, cast directories, and episode lists.",
+        content: `
+          <p>The entire dynamic UI relies on TMDb REST endpoints. Follow these steps to obtain and integrate your personal API key:</p>
+
+          <h2>Obtaining a TMDb API Key</h2>
+          <ol>
+            <li>Create an account at <a href="https://www.themoviedb.org/" target="_blank">themoviedb.org</a>.</li>
+            <li>Go to <strong>Settings &rarr; API &rarr; Request an API Key</strong> (Choose <em>Developer / Non-commercial</em>).</li>
+            <li>Copy your <strong>API Key (v3 auth)</strong> string (32 hex characters).</li>
+          </ol>
+
+          <h2>Theme Code Integration</h2>
+          <p>Search for <code>apiKey</code> in your Blogger HTML editor or configure it via the script header tag:</p>
+
+          <div class="code-box">
+            <div class="code-box-header">
+              <span>JavaScript TMDb Global Configuration</span>
+              <button class="code-copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
+            <pre><code>&lt;script&gt;
+  window.tmdbConfig = {
+    apiKey: "YOUR_32_CHAR_TMDB_API_KEY",
+    language: "en-US",
+    imgBaseUrl: "https://image.tmdb.org/t/p/",
+    posterSize: "w342",
+    backdropSize: "w1280"
+  };
+&lt;/script&gt;</code></pre>
+          </div>
+
+          <div class="callout callout-tip">
+            <i class="fa-solid fa-lightbulb"></i>
+            <div>
+              <strong>High-Speed CDN:</strong> Images from TMDb are delivered through Cloudflare's global edge network, keeping your Blogger page speed fast and lowering server latency worldwide.
+            </div>
+          </div>
+        `
+      },
+
+      "supabase-auth": {
+        badge: "User Engine",
+        title: "Supabase User Auth & Watchlist Sync",
+        lead: "Enable cloud user accounts, session storage, favorite bookmarks, and custom watchlists with Supabase Backend-as-a-Service.",
+        content: `
+          <p>iQPlay uses Supabase for database and user management without needing any server infrastructure. Users can log in from any browser and access their saved movies and TV shows instantly.</p>
+
+          <h2>Supabase Credentials Integration</h2>
+          <div class="code-box">
+            <div class="code-box-header">
+              <span>Supabase Client Initialization</span>
+              <button class="code-copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
+            <pre><code>&lt;script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const SUPABASE_URL = "https://your-project-ref.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+&lt;/script&gt;</code></pre>
+          </div>
+
+          <h2>Supported User Features</h2>
+          <ul>
+            <li><strong>Email &amp; Password Auth:</strong> Fast signup with automated session tokens.</li>
+            <li><strong>Instant Favorites:</strong> Click the bookmark heart icon on any title to save it to your Supabase <code>watchlist</code> table.</li>
+            <li><strong>Watch History:</strong> Automatically retains the user's last watched episode and timestamp.</li>
+          </ul>
+        `
+      },
+
+      "multi-server": {
+        badge: "Streaming Engine",
+        title: "Multi-Server Video Players",
+        lead: "Configure multi-source failover video servers with custom embeds, responsive iframes, and auto-fallback handling.",
+        content: `
+          <p>Ensure uninterrupted video streaming with multi-server failover architecture. If Server 1 encounters downtime, visitors can seamlessly switch to Server 2, 3, or direct HLS with a single click.</p>
+
+          <h2>Default Server Endpoints</h2>
+          <div class="code-box">
+            <div class="code-box-header">
+              <span>Server Embed Routing Matrix</span>
+              <button class="code-copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
+            <pre><code>// Dynamic Embed URL Generators
+const SERVER_PROVIDERS = {
+  server1: (id, s, e) =&gt; s ? \`https://vidsrc.to/embed/tv/\${id}/\${s}/\${e}\` : \`https://vidsrc.to/embed/movie/\${id}\`,
+  server2: (id, s, e) =&gt; s ? \`https://superembed.stream/embed/\${id}/\${s}/\${e}\` : \`https://superembed.stream/embed/\${id}\`,
+  server3: (id, s, e) =&gt; s ? \`https://autoembed.to/tv/tmdb/\${id}-\${s}-\${e}\` : \`https://autoembed.to/movie/tmdb/\${id}\`,
+  server4: (id, s, e) =&gt; s ? \`https://multiembed.mov/?video_id=\${id}&amp;s=\${s}&amp;e=\${e}\` : \`https://multiembed.mov/?video_id=\${id}\`
+};</code></pre>
+          </div>
+
+          <div class="callout callout-info">
+            <i class="fa-solid fa-shield"></i>
+            <div>
+              <strong>AdBlock / Sandbox Friendly:</strong> All player iframes feature strict <code>sandbox="allow-scripts allow-same-origin allow-forms"</code> attributes to prevent rogue popups while allowing video playback.
+            </div>
+          </div>
+        `
+      },
+
+      "counter-comments": {
+        badge: "Engagement",
+        title: "Realtime Stats & Comments",
+        lead: "Interactive post stats, view counters, user reaction hearts, and 2-tier nested discussion threads.",
+        content: `
+          <p>Boost visitor engagement with real-time views and interactive comments designed to fit the modern dark-slate aesthetic.</p>
+
+          <h2>Features</h2>
+          <ul>
+            <li><strong>Live View Counter:</strong> Tracks visitor page views and displays real-time statistics per post.</li>
+            <li><strong>Heart Reaction Button:</strong> Visitors can click the like heart to instantly increment post popularity.</li>
+            <li><strong>Nested Reply System:</strong> Clean 2-tier threaded discussion styling with author identification badges.</li>
+          </ul>
+
+          <div class="callout callout-tip">
+            <i class="fa-solid fa-lightbulb"></i>
+            <div>
+              Comments support standard Blogger native moderation or can connect directly to your custom Supabase comments table.
+            </div>
+          </div>
+        `
+      },
+
+      "shortcode-builder": {
+        badge: "Interactive Utility",
+        title: "Shortcode Generator",
+        lead: "Quickly generate shortcodes for custom homepage widgets, category grids, and carousel sliders.",
+        content: `
+          <p>Use the generator below to create shortcodes for homepage layout widgets:</p>
+
+          <div class="tool-sandbox-card">
+            <div class="tool-grid">
+              <div class="tool-field">
+                <label>Widget Label / Title</label>
+                <input type="text" id="gen-label" value="Trending Movies" oninput="generateShortcode()">
+              </div>
+              <div class="tool-field">
+                <label>Display Style</label>
+                <select id="gen-style" onchange="generateShortcode()">
+                  <option value="slider">Hero Carousel Slider</option>
+                  <option value="grid" selected>Poster Grid</option>
+                  <option value="list">Compact List</option>
+                  <option value="trending">Ranked Top 10</option>
+                </select>
+              </div>
+              <div class="tool-field">
+                <label>Item Count</label>
+                <input type="number" id="gen-count" value="12" min="1" max="24" oninput="generateShortcode()">
+              </div>
+              <div class="tool-field">
+                <label>Sort Order</label>
+                <select id="gen-sort" onchange="generateShortcode()">
+                  <option value="recent" selected>Most Recent</option>
+                  <option value="popular">Most Popular</option>
+                  <option value="rating">Highest Rated</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="code-box" style="margin-bottom: 0;">
+              <div class="code-box-header">
+                <span>Generated Blogger Widget Shortcode</span>
+                <button class="code-copy-btn" id="copy-shortcode-btn" onclick="copyGeneratedShortcode()"><i class="fa-regular fa-copy"></i> Copy</button>
+              </div>
+              <pre><code id="shortcode-output">[iqplay label="Trending Movies" style="grid" count="12" sort="recent"]</code></pre>
+            </div>
+          </div>
+
+          <div class="callout callout-info">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>
+              Paste the generated shortcode inside any <strong>HTML/JavaScript Gadget</strong> in your <strong>Blogger Layout</strong> manager.
+            </div>
+          </div>
+        `
+      },
+
+      "post-creator": {
+        badge: "Publishing Workflow",
+        title: "Post Schema Creator",
+        lead: "Generate the exact JSON/HTML schema required when publishing movie and TV series posts on Blogger.",
+        content: `
+          <p>To ensure TMDb auto-linking, copy this template into the <strong>HTML view</strong> of your Blogger post editor:</p>
+
+          <div class="code-box">
+            <div class="code-box-header">
+              <span>Blogger Post HTML Schema Template</span>
+              <button class="code-copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button>
+            </div>
+            <pre><code>&lt;!-- iQPlay Post Configuration Schema --&gt;
+&lt;div class="iqplay-data" 
+     data-tmdb-id="550" 
+     data-type="movie" 
+     data-title="Fight Club" 
+     data-year="1999" 
+     data-quality="4K UHD"&gt;
+&lt;/div&gt;
+
+&lt;!-- Optional Custom Streaming Overrides --&gt;
+&lt;div class="iqplay-sources" style="display:none;"&gt;
+  &lt;source data-server="Server 1 (Direct)" data-src="https://your-cdn.com/stream.m3u8" data-type="hls" /&gt;
+  &lt;source data-server="Server 2 (Embed)" data-src="https://vidsrc.to/embed/movie/550" /&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Optional custom post synopsis or download buttons here...&lt;/p&gt;</code></pre>
+          </div>
+
+          <h2>Key Schema Attributes</h2>
+          <ul>
+            <li><code>data-tmdb-id</code>: The TMDb ID number found in any movie/TV URL on themoviedb.org.</li>
+            <li><code>data-type</code>: Set to <code>movie</code> or <code>tv</code>.</li>
+            <li><code>data-quality</code>: Badge displayed over poster (e.g. <code>4K UHD</code>, <code>1080p</code>, <code>CAM</code>).</li>
+          </ul>
+        `
+      },
+
+      troubleshooting: {
+        badge: "Diagnostic Center",
+        title: "Troubleshooting & FAQ",
+        lead: "Solutions to common setup issues, TMDb API key questions, layout alignments, and mobile optimizations.",
+        content: `
+          <h2>Frequently Addressed Questions</h2>
+
+          <div class="step-item">
+            <div class="step-badge"><i class="fa-solid fa-question"></i></div>
+            <div class="step-body">
+              <h4>Post posters or synopsis fail to load?</h4>
+              <p>Verify that your TMDb API key is valid and has not reached rate limits. Open browser console (<kbd>F12</kbd> &rarr; Console) to verify if requests to <code>api.themoviedb.org</code> return HTTP 200.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge"><i class="fa-solid fa-question"></i></div>
+            <div class="step-body">
+              <h4>Theme redirects on domain load?</h4>
+              <p>This happens when your domain has not been registered in the anti-theft licensing engine. Visit the <a href="https://abefilmofficialzone.blogspot.com/p/registration-process.html" target="_blank">Registration Process Portal</a> or message the author on Telegram <a href="https://t.me/ayengcoding" target="_blank">@ayengcoding</a> to verify your domain.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge"><i class="fa-solid fa-question"></i></div>
+            <div class="step-body">
+              <h4>Mobile layout appears distorted or broken?</h4>
+              <p>Go to <strong>Blogger Dashboard &rarr; Theme</strong>, click the dropdown next to Customize, select <strong>Mobile Settings</strong>, and make sure <strong>Desktop</strong> is selected. This forces Blogger to render the responsive layout instead of the legacy mobile template.</p>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-badge"><i class="fa-solid fa-question"></i></div>
+            <div class="step-body">
+              <h4>How do I change the brand purple accent color?</h4>
+              <p>In the CSS <code>:root</code> declaration, update <code>--brand: #9333ea;</code> to your preferred color (e.g. Coral Crimson <code>#e11d48</code> or Emerald <code>#059669</code>).</p>
+            </div>
+          </div>
+        `
+      },
+
+      community: {
+        badge: "Support Network",
+        title: "Official Community & Socials",
+        lead: "Connect with the author, join developer discussion groups, submit bug reports, or request feature updates.",
+        content: `
+          <p>Get in touch directly through our official social media and support channels:</p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin: 1.5rem 0;">
+            
+            <a href="https://t.me/ayengcoding" target="_blank" rel="noopener" style="text-decoration: none; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface); display: flex; gap: 1rem; align-items: center;">
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: #24A1DE; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fa-brands fa-telegram"></i>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: var(--text);">Telegram Author</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">@ayengcoding (Direct Support)</div>
+              </div>
+            </a>
+
+            <a href="https://t.me/ayeng_coding" target="_blank" rel="noopener" style="text-decoration: none; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface); display: flex; gap: 1rem; align-items: center;">
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: #24A1DE; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fa-solid fa-bullhorn"></i>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: var(--text);">Telegram Channel</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">@ayeng_coding (Updates)</div>
+              </div>
+            </a>
+
+            <a href="https://t.me/ayengcodingofficial" target="_blank" rel="noopener" style="text-decoration: none; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface); display: flex; gap: 1rem; align-items: center;">
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: #0088cc; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fa-solid fa-comments"></i>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: var(--text);">Discussion Group</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">@ayengcodingofficial</div>
+              </div>
+            </a>
+
+            <a href="https://www.facebook.com/acohcayeng" target="_blank" rel="noopener" style="text-decoration: none; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface); display: flex; gap: 1rem; align-items: center;">
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: #1877F2; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fa-brands fa-facebook"></i>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: var(--text);">Facebook Page</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">fb.com/acohcayeng</div>
+              </div>
+            </a>
+
+            <a href="https://www.instagram.com/acoh_cariel/" target="_blank" rel="noopener" style="text-decoration: none; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface); display: flex; gap: 1rem; align-items: center;">
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: #E4405F; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fa-brands fa-instagram"></i>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: var(--text);">Instagram Profile</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">@acoh_cariel</div>
+              </div>
+            </a>
+
+            <a href="https://ayengstore.gumroad.com/l/iqplay" target="_blank" rel="noopener" style="text-decoration: none; padding: 1.25rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface); display: flex; gap: 1rem; align-items: center;">
+              <div style="width: 44px; height: 44px; border-radius: 10px; background: #9333ea; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                <i class="fa-solid fa-bag-shopping"></i>
+              </div>
+              <div>
+                <div style="font-weight: 700; color: var(--text);">Gumroad Store</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">Purchase Theme &amp; Addons</div>
+              </div>
+            </a>
+
+          </div>
+        `
+      }
+    };
+
+    /* Order sequence for Prev/Next pagination */
+    const DOC_KEYS = Object.keys(DOCS_DATA);
+    let currentDocKey = "intro";
+
+    /* ========================================================
+       RENDER ARTICLE ROUTER
+       ======================================================== */
+    function renderArticle(docKey) {
+      if (!DOCS_DATA[docKey]) docKey = "intro";
+      currentDocKey = docKey;
+      const data = DOCS_DATA[docKey];
+
+      const mount = document.getElementById('article-mount');
+      mount.innerHTML = `
+        <article class="article-header">
+          <span class="article-badge"><i class="fa-solid fa-sparkles"></i> ${data.badge}</span>
+          <h1 class="article-title">${data.title}</h1>
+          <p class="article-lead">${data.lead}</p>
+        </article>
+        <div class="article-body">
+          ${data.content}
+        </div>
+      `;
+
+      // Update active state in sidebar links
+      document.querySelectorAll('.sidebar-link').forEach(link => {
+        if (link.getAttribute('data-doc') === docKey) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+
+      // Update Pager Navigation
+      const currentIndex = DOC_KEYS.indexOf(docKey);
+      const prevBtn = document.getElementById('pager-prev-btn');
+      const nextBtn = document.getElementById('pager-next-btn');
+
+      if (currentIndex > 0) {
+        const prevKey = DOC_KEYS[currentIndex - 1];
+        prevBtn.style.visibility = 'visible';
+        document.getElementById('pager-prev-title').textContent = DOCS_DATA[prevKey].title;
+        prevBtn.onclick = () => navigateTo(prevKey);
+      } else {
+        prevBtn.style.visibility = 'hidden';
       }
 
-      outputBox.textContent = code;
+      if (currentIndex < DOC_KEYS.length - 1) {
+        const nextKey = DOC_KEYS[currentIndex + 1];
+        nextBtn.style.visibility = 'visible';
+        document.getElementById('pager-next-title').textContent = DOCS_DATA[nextKey].title;
+        nextBtn.onclick = () => navigateTo(nextKey);
+      } else {
+        nextBtn.style.visibility = 'hidden';
+      }
+
+      // Close mobile drawer on navigation
+      closeSidebar();
+
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Update URL hash without jump
+      if (window.location.hash !== '#' + docKey) {
+        history.pushState(null, null, '#' + docKey);
+      }
     }
 
-    [labelInput, styleInput, countInput, sortInput].forEach(el => {
-      el.addEventListener('input', updateShortcode);
-      el.addEventListener('change', updateShortcode);
+    function navigateTo(docKey) {
+      renderArticle(docKey);
+    }
+
+    /* ========================================================
+       THEME SWITCHER ENGINE (LIGHT / DARK)
+       ======================================================== */
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const themeIconSun = document.getElementById('theme-icon-sun');
+    const themeIconMoon = document.getElementById('theme-icon-moon');
+
+    function applyTheme(isDark) {
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        themeIconSun.style.display = 'none';
+        themeIconMoon.style.display = 'block';
+        localStorage.setItem('iqplay_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        themeIconSun.style.display = 'block';
+        themeIconMoon.style.display = 'none';
+        localStorage.setItem('iqplay_theme', 'light');
+      }
+    }
+
+    themeToggleBtn.addEventListener('click', () => {
+      const isCurrentlyDark = document.documentElement.classList.contains('dark');
+      applyTheme(!isCurrentlyDark);
     });
-    updateShortcode();
 
-    // Copy to clipboard helper
-    function showToast(message) {
-      const toast = document.getElementById('docs-toast');
-      const toastMsg = document.getElementById('docs-toast-msg');
-      if (toast && toastMsg) {
-        toastMsg.textContent = message;
-        toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
-        setTimeout(() => {
-          toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
-        }, 2500);
+    // Check system preference or saved preference
+    const savedTheme = localStorage.getItem('iqplay_theme');
+    if (savedTheme === 'light') {
+      applyTheme(false);
+    } else {
+      applyTheme(true);
+    }
+
+    /* ========================================================
+       OFF-CANVAS MOBILE DRAWER
+       ======================================================== */
+    const hamburgerBtn = document.getElementById('hamburger-toggle-btn');
+    const sidebar = document.getElementById('doc-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      backdrop.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    hamburgerBtn.addEventListener('click', () => {
+      if (sidebar.classList.contains('open')) {
+        closeSidebar();
+      } else {
+        openSidebar();
       }
-    }
+    });
 
-    function triggerToastDemo() {
-      showToast("Added 'Clayface (2026)' to Watchlist!");
-    }
+    backdrop.addEventListener('click', closeSidebar);
 
-    copyBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(outputBox.textContent).then(() => {
-        copyStatus.classList.remove('hidden');
-        showToast('Shortcode copied to clipboard!');
-        setTimeout(() => copyStatus.classList.add('hidden'), 2500);
+    // Sidebar navigation clicks
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const docKey = link.getAttribute('data-doc');
+        if (docKey) navigateTo(docKey);
       });
     });
 
-    if (copyPostBtn) {
-      copyPostBtn.addEventListener('click', () => {
-        const postCode = document.getElementById('post-template-code').textContent;
-        navigator.clipboard.writeText(postCode).then(() => {
-          showToast('Post schema copied to clipboard!');
+    /* ========================================================
+       LIVE SEARCH MODAL ENGINE (CTRL+K)
+       ======================================================== */
+    const searchModal = document.getElementById('search-modal-backdrop');
+    const searchInput = document.getElementById('search-input');
+    const searchCloseBtn = document.getElementById('search-close-btn');
+    const searchResultsList = document.getElementById('search-results-list');
+    const searchTriggerDesktop = document.getElementById('search-trigger-desktop');
+    const searchTriggerMobile = document.getElementById('search-trigger-mobile');
+
+    function openSearchModal() {
+      searchModal.classList.add('open');
+      searchInput.value = '';
+      executeSearch('');
+      setTimeout(() => searchInput.focus(), 50);
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSearchModal() {
+      searchModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    searchTriggerDesktop.addEventListener('click', openSearchModal);
+    searchTriggerMobile.addEventListener('click', openSearchModal);
+    searchCloseBtn.addEventListener('click', closeSearchModal);
+
+    searchModal.addEventListener('click', (e) => {
+      if (e.target === searchModal) closeSearchModal();
+    });
+
+    // Keyboard shortcut Ctrl+K & Escape
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (searchModal.classList.contains('open')) {
+          closeSearchModal();
+        } else {
+          openSearchModal();
+        }
+      }
+      if (e.key === 'Escape' && searchModal.classList.contains('open')) {
+        closeSearchModal();
+      }
+    });
+
+    function executeSearch(query) {
+      query = query.trim().toLowerCase();
+      let matches = [];
+
+      DOC_KEYS.forEach(key => {
+        const item = DOCS_DATA[key];
+        const plainContent = item.content.replace(/<[^>]*>?/gm, ' ').toLowerCase();
+        let score = 0;
+
+        if (item.title.toLowerCase().includes(query)) score += 10;
+        if (item.badge.toLowerCase().includes(query)) score += 5;
+        if (item.lead.toLowerCase().includes(query)) score += 3;
+        if (plainContent.includes(query)) score += 1;
+
+        if (!query || score > 0) {
+          matches.push({ key, item, score });
+        }
+      });
+
+      if (query) {
+        matches.sort((a, b) => b.score - a.score);
+      }
+
+      if (matches.length === 0) {
+        searchResultsList.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+            <i class="fa-solid fa-ghost" style="font-size: 2rem; margin-bottom: 0.5rem; display: block; opacity: 0.5;"></i>
+            No documentation matching "<strong>${query}</strong>"
+          </div>
+        `;
+        return;
+      }
+
+      searchResultsList.innerHTML = matches.map((m, idx) => `
+        <div class="search-result-item ${idx === 0 ? 'selected' : ''}" data-doc="${m.key}">
+          <span class="search-result-badge">${m.item.badge}</span>
+          <div class="search-result-title">${m.item.title}</div>
+          <div class="search-result-lead">${m.item.lead}</div>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('.search-result-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const docKey = item.getAttribute('data-doc');
+          closeSearchModal();
+          navigateTo(docKey);
         });
       });
     }
 
-    // 4. Scrollspy & Auto-Center Navigation Tabs
-    const navTabsContainer = document.getElementById('sticky-header-tabs');
-    const tabLinks = document.querySelectorAll('.tab-link');
-    const sectionIds = Array.from(tabLinks).map(t => t.getAttribute('data-target'));
-    const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+    searchInput.addEventListener('input', (e) => {
+      executeSearch(e.target.value);
+    });
 
-    function updateScrollspy() {
-      const scrollPos = window.scrollY + 120;
-      let currentSectionId = '';
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const sec = sections[i];
-        if (sec.offsetTop <= scrollPos) {
-          currentSectionId = sec.id;
-          break;
-        }
-      }
-
-      if (!currentSectionId && sections.length > 0) {
-        currentSectionId = sections[0].id;
-      }
-
-      tabLinks.forEach(tab => {
-        const target = tab.getAttribute('data-target');
-        if (target === currentSectionId) {
-          if (!tab.classList.contains('active')) {
-            tab.classList.add('active');
-            // Auto-center the active tab horizontally in sticky header
-            const containerWidth = navTabsContainer.clientWidth;
-            const tabLeft = tab.offsetLeft;
-            const tabWidth = tab.clientWidth;
-            navTabsContainer.scrollTo({
-              left: tabLeft - (containerWidth / 2) + (tabWidth / 2),
-              behavior: 'smooth'
-            });
-          }
-        } else {
-          tab.classList.remove('active');
-        }
-      });
+    /* ========================================================
+       CODE COPY & TOAST NOTIFICATION
+       ======================================================== */
+    function showToast(message) {
+      const toast = document.getElementById('docs-toast');
+      const toastMsg = document.getElementById('docs-toast-msg');
+      toastMsg.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
     }
 
-    window.addEventListener('scroll', updateScrollspy, { passive: true });
-    window.addEventListener('resize', updateScrollspy);
-    document.addEventListener('DOMContentLoaded', updateScrollspy);
+    function copyCode(btn) {
+      const codeElement = btn.closest('.code-box').querySelector('pre code');
+      if (codeElement) {
+        navigator.clipboard.writeText(codeElement.textContent).then(() => {
+          const originalText = btn.innerHTML;
+          btn.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> Copied!';
+          showToast('Code snippet copied to clipboard!');
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+          }, 2000);
+        });
+      }
+    }
+
+    function generateShortcode() {
+      const label = document.getElementById('gen-label').value.trim() || 'Trending Content';
+      const style = document.getElementById('gen-style').value;
+      const count = document.getElementById('gen-count').value || 12;
+      const sort = document.getElementById('gen-sort').value;
+      const code = `[iqplay label="${label}" style="${style}" count="${count}" sort="${sort}"]`;
+      const output = document.getElementById('shortcode-output');
+      if (output) output.textContent = code;
+    }
+
+    function copyGeneratedShortcode() {
+      const output = document.getElementById('shortcode-output');
+      const btn = document.getElementById('copy-shortcode-btn');
+      if (output) {
+        navigator.clipboard.writeText(output.textContent).then(() => {
+          const originalText = btn.innerHTML;
+          btn.innerHTML = '<i class="fa-solid fa-check text-emerald-400"></i> Copied!';
+          showToast('Shortcode copied to clipboard!');
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+          }, 2000);
+        });
+      }
+    }
+
+    /* ========================================================
+       INITIALIZATION ROUTER
+       ======================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && DOCS_DATA[hash]) {
+        renderArticle(hash);
+      } else {
+        renderArticle('intro');
+      }
+    });
+
+    window.addEventListener('popstate', () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && DOCS_DATA[hash]) {
+        renderArticle(hash);
+      }
+    });
   </script>
 </body>
 </html>
