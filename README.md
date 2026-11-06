@@ -48,11 +48,9 @@
 - **Target Platform:** Google Blogger (Blogspot XML Engine)
 - **Author:** Ayeng Coding
 - **Repository:** [https://github.com/ayengcoding/iqplay](https://github.com/ayengcoding/iqplay)
-- **Live Documentation:** [https://ayengcoding.github.io/iqplay/](https://ayengcoding.github.io/iqplay/)
+- **Live Documentation Portal:** [https://ayengcoding.github.io/iqplay/](https://ayengcoding.github.io/iqplay/)
 - **Live Interactive Demo:** [https://iqplayofficial.blogspot.com/](https://iqplayofficial.blogspot.com/)
-- **Gumroad License Store:** [https://ayengstore.gumroad.com/l/iqplay](https://ayengstore.gumroad.com/l/iqplay)
-- **Regular Price:** $59.00 USD
-- **Sale Price:** $39.00 USD
+- **Official Store / License:** [https://ayengstore.gumroad.com/l/iqplay](https://ayengstore.gumroad.com/l/iqplay)
 
 ---
 
